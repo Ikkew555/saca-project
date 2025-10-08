@@ -1,0 +1,250 @@
+/* --- Container --- */
+.chatbot-container {
+  padding: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+  color: #222;
+  font-family: "Inter", sans-serif;
+}
+
+.chatbot-title {
+  text-align: center;
+  margin-bottom: 16px;
+  color: white;
+}
+
+/* --- Chat box --- */
+.chat-box {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 15px;
+  height: 520px;
+  overflow-y: auto;
+  background: #fafafa;
+  margin-bottom: 15px;
+}
+
+/* --- Symptom Gallery --- */
+.symptom-gallery {
+  text-align: center;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 15px;
+  margin-top: 10px;
+  width: 80%;
+  margin: auto;
+  margin-bottom: 24px;
+}
+
+.gallery-text {
+  margin-bottom: 16px;
+}
+.symptom-card {
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  aspect-ratio: 1 / 1; /* Make every box square */
+}
+
+.symptom-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Only image, no text */
+.symptom-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fills box fully */
+  display: block;
+}
+
+/* --- Chat Messages --- */
+.chat-message {
+  margin-bottom: 12px;
+}
+
+.chat-message.user {
+  text-align: right;
+}
+
+.chat-message.bot {
+  text-align: left;
+}
+
+.message-bubble {
+  display: inline-block;
+  background: #e5e5ea;
+  color: #000;
+  padding: 10px 14px;
+  border-radius: 16px;
+  max-width: 80%;
+  white-space: pre-line;
+}
+
+.chat-message.user .message-bubble {
+  background: #0084ff;
+  color: #fff;
+}
+
+/* --- Typing Indicator --- */
+.typing-indicator {
+  text-align: left;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* --- Input Section --- */
+.input-section {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input {
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.btn-send,
+.btn-mic {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-send {
+  background: #007bff;
+  color: white;
+}
+
+.btn-send:hover {
+  background: #0066d6;
+}
+
+.btn-mic {
+  background: lightgreen;
+}
+
+.btn-mic.recording {
+  background: red;
+  color: white;
+}
+
+/* --- Typing Animation --- */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-style: italic;
+  color: #555;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #888;
+  border-radius: 50%;
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.6);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.message-bubble {
+  display: inline-block;
+  background: #e5e5ea;
+  color: #000;
+  padding: 10px 14px;
+  border-radius: 16px;
+  max-width: 80%;
+  white-space: pre-line;
+  animation: fadeInText 0.2s ease-in;
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🔴 Recording Indicator */
+.recording-status {
+  color: red;
+  font-weight: 500;
+  text-align: center;
+  margin-top: 8px;
+  animation: blink 1s infinite;
+}
+
+.recording-dot {
+  height: 10px;
+  width: 10px;
+  background-color: red;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  animation: pulse 1.2s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}

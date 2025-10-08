@@ -1,0 +1,20 @@
+symptom,disease,weight
+"cough","COPD",0.6
+"shortness of breath","COPD",0.7
+"chest pain","Heart disease",0.7
+"excessive thirst","Diabetes",0.7
+"frequent urination","Diabetes",0.6
+"fatigue","Kidney disease",0.4
+"leg swelling","Kidney disease",0.6
+"leg swelling","Heart failure",0.6
+"fever","Infection",0.5
+"itchy skin","Skin condition",0.5
+"back pain","Musculoskeletal",0.5
+"stomach pain","Gastroenteritis",0.6
+"runny nose","Common cold",0.6
+"sore throat","Flu",0.7
+"dizziness","Low blood pressure",0.5
+"insomnia","Stress disorder",0.5
+"weakness","Anemia",0.6
+"ear pain","Ear infection",0.7
+"eye infection","Conjunctivitis",0.7

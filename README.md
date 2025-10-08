@@ -5,15 +5,24 @@
 ## 📁 Project Structure
 
 SACA-PROJECT/
-├── backend/ # Flask (Python) backend for ML/NLP processing
-│ ├── flask_app/ # Python modules for routes, ML models, NLP logic
+├── backend/ # Flask (Python) backend for ML/NLP logic
+│ ├── app/ # Core logic, data, and utility modules
+│ │ ├── cli_match.py # Symptom → Disease logic
+│ │ ├── api_match.py # REST API for ML/NLP
+│ │ ├── utils.py # Helper functions for CSV data
+│ │ └── data/ # Dataset (.csv) for symptom/disease mapping
+│ ├── flask_app/ # Flask routing layer
+│ │ └── routes.py
 │ ├── run.py # Flask server entry point
-│ └── requirements.txt
-├── frontend/ # React app built with Vite
+│ └── requirements.txt # Backend dependencies
+│
+├── frontend/ # React web app (user interface)
 │ ├── public/
 │ ├── src/
+│ │ └── Chatbot.js # Chat interface for text/voice input
 │ ├── package.json
-│ └── vite.config.js
+│ └── vite.config.js # For Vite build system
+│
 └── README.md # Project documentation
 
 ## 🚀 Features
@@ -31,14 +40,14 @@ SACA-PROJECT/
 ```bash
 cd frontend
 npm install
-npm run dev
-Visit: http://localhost:5173
+npm start
+Visit: http://localhost:3000
 ```
 
-### 🔹 Backend (Flask)
+### 🔹 Backend (Python)
 
 ```bash
 cd backend
 pip install -r requirements.txt
-python run.py
+python3 run.py
 ```
