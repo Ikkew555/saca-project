@@ -1,7 +1,11 @@
+* {
+  background-color: white;
+}
+
 /* --- Container --- */
 .chatbot-container {
   padding: 20px;
-  max-width: 700px;
+  max-width: 1000px;
   margin: 0 auto;
   color: #222;
   font-family: "Inter", sans-serif;
@@ -9,8 +13,8 @@
 
 .chatbot-title {
   text-align: center;
-  margin-bottom: 16px;
-  color: white;
+  color: black;
+  background-color: transparent;
 }
 
 /* --- Chat box --- */
@@ -18,10 +22,11 @@
   border: 1px solid #ccc;
   border-radius: 12px;
   padding: 15px;
-  height: 520px;
+  height: 600px;
   overflow-y: auto;
-  background: #fafafa;
+  background: transparent;
   margin-bottom: 15px;
+  width: 100%;
 }
 
 /* --- Symptom Gallery --- */
@@ -32,7 +37,7 @@
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  gap: 15px;
+  gap: 24px;
   margin-top: 10px;
   width: 80%;
   margin: auto;
@@ -45,16 +50,16 @@
 .symptom-card {
   border-radius: 12px;
   overflow: hidden;
-  cursor: pointer;
   background: #fff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  aspect-ratio: 1 / 1; /* Make every box square */
+  height: 200px;
 }
 
 .symptom-card:hover {
-  transform: scale(1.05);
+  cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  /* background-color: #0084ff; */
 }
 
 /* Only image, no text */
@@ -63,6 +68,7 @@
   height: 100%;
   object-fit: cover; /* fills box fully */
   display: block;
+  cursor: pointer;
 }
 
 /* --- Chat Messages --- */
@@ -103,41 +109,69 @@
 /* --- Input Section --- */
 .input-section {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
   gap: 10px;
-}
-
-.chat-input {
-  flex-grow: 1;
   padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
 }
 
+/* Chat input box */
+.chat-input {
+  flex: 1;
+  padding: 16px;
+  border: solid 1px #555;
+  border-radius: 24px;
+  height: 50px; /* fixed height for alignment */
+  font-size: 16px;
+}
+
+/* Send & Mic buttons */
 .btn-send,
 .btn-mic {
-  padding: 10px 20px;
-  border-radius: 8px;
   border: none;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: bold;
 }
 
+/* Send button */
 .btn-send {
-  background: #007bff;
-  color: white;
+  background-color: #0084ff;
+  padding: 10px 18px;
+  border-radius: 24px;
+  height: 50px; /* same height as input */
+  color: #fff;
 }
 
-.btn-send:hover {
-  background: #0066d6;
+/* Mic button (circle shape) */
+.mic-img {
+  background-color: #000;
+  color: #fff;
+  width: 50px;
+  height: 50px; /* match input height */
+  border-radius: 50%; /* make it perfectly circular */
+  display: flex;
+  align-items: center; /* center mic icon vertically */
+  justify-content: center; /* center horizontally */
+  padding: 14px;
 }
 
-.btn-mic {
-  background: lightgreen;
+.btn-send:hover,
+.mic-img:hover {
+  background-color: #e5e5e5;
+  color: #000;
 }
 
 .btn-mic.recording {
   background: red;
   color: white;
+  border-radius: 50%; /* make it perfectly circular */
 }
 
 /* --- Typing Animation --- */
@@ -246,5 +280,209 @@
   100% {
     transform: scale(1);
     opacity: 0.8;
+  }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  z-index: 999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.image-bubble {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none;
+}
+
+.chat-image {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 2px solid #f1f5f9;
+}
+
+.chatbot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.lang-btn {
+  background: #e5e7eb;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* ======= GLOBAL POPUP STYLES ======= */
+
+/* Dark background overlay for all popups */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7); /* darker gray overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Popup container */
+.popup-content {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  animation: popupFadeIn 0.3s ease;
+}
+
+/* Popup title & text */
+.popup-content h3 {
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  color: #222;
+  background: none;
+}
+
+.popup-content p {
+  color: #444;
+  margin-bottom: 1.2rem;
+  font-size: 0.95rem;
+  background: none;
+}
+
+/* Option buttons (for language selection) */
+.popup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popup-option {
+  background: #e5e7eb;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.popup-option.selected {
+  background: #0084ff;
+  color: white;
+}
+
+.popup-option:hover {
+  color: #333;
+}
+
+/* Recording visualizer */
+.recording-visualizer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background-color: red;
+  border-radius: 50%;
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.recording-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.recording-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Stop button */
+.btn-stop-record {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s ease;
+}
+
+.btn-stop-record:hover {
+  background-color: #dc2626;
+}
+
+/* ======= ANIMATIONS ======= */
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.3;
   }
 }

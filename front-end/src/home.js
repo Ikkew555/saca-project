@@ -9,12 +9,12 @@ import speak from "./assets/speech.png";
 import translate from "./assets/technical-support.png";
 import healthcare from "./assets/healthcare.png";
 import { useState } from "react";
-import LanguageSelector from "./languageSelector.jsx";
+import LanguageSelector from "./languageSelector.jsx"; // ✅ import your flag selector
 import { translations } from "./translations.js";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  const [language, setLanguage] = useState("en-US");
+  const [language, setLanguage] = useState("en");
   const t = translations[language];
   const navigate = useNavigate();
 

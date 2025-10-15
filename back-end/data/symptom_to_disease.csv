@@ -1,20 +1,178 @@
 symptom,disease,weight
-"cough","COPD",0.6
-"shortness of breath","COPD",0.7
-"chest pain","Heart disease",0.7
-"excessive thirst","Diabetes",0.7
-"frequent urination","Diabetes",0.6
-"fatigue","Kidney disease",0.4
-"leg swelling","Kidney disease",0.6
-"leg swelling","Heart failure",0.6
-"fever","Infection",0.5
-"itchy skin","Skin condition",0.5
-"back pain","Musculoskeletal",0.5
-"stomach pain","Gastroenteritis",0.6
-"runny nose","Common cold",0.6
-"sore throat","Flu",0.7
-"dizziness","Low blood pressure",0.5
-"insomnia","Stress disorder",0.5
-"weakness","Anemia",0.6
-"ear pain","Ear infection",0.7
-"eye infection","Conjunctivitis",0.7
+fever,Flu,0.7
+cough,Flu,0.6
+sore_throat,Flu,0.6
+fatigue,Flu,0.6
+runny_nose,Flu,0.5
+headache,Flu,0.5
+chills,Flu,0.6
+cough,Common cold,0.6
+runny_nose,Common cold,0.7
+sneezing,Common cold,0.6
+sore_throat,Common cold,0.5
+headache,Common cold,0.4
+fever,Common cold,0.3
+fever,COVID-19,0.7
+cough,COVID-19,0.7
+shortness_of_breath,COVID-19,0.6
+fatigue,COVID-19,0.6
+loss_of_appetite,COVID-19,0.4
+headache,COVID-19,0.5
+sore_throat,COVID-19,0.5
+fever,Pneumonia,0.7
+shortness_of_breath,Pneumonia,0.7
+chest_pain,Pneumonia,0.6
+chills,Pneumonia,0.5
+shortness_of_breath,Asthma,0.8
+cough,Asthma,0.6
+chest_pain,Asthma,0.4
+shortness_of_breath,COPD,0.7
+cough,COPD,0.6
+chest_pain,COPD,0.4
+fatigue,COPD,0.5
+diarrhea,Gastroenteritis,0.7
+vomiting,Gastroenteritis,0.7
+abdominal_cramps,Gastroenteritis,0.7
+nausea,Gastroenteritis,0.6
+fever,Gastroenteritis,0.4
+loss_of_appetite,Gastroenteritis,0.5
+vomiting,Food poisoning,0.7
+diarrhea,Food poisoning,0.7
+abdominal_cramps,Food poisoning,0.7
+nausea,Food poisoning,0.6
+fever,Food poisoning,0.5
+burning_urination,UTI,0.8
+fever,UTI,0.4
+loss_of_appetite,UTI,0.3
+fatigue,Kidney disease,0.5
+leg_swelling,Kidney disease,0.6
+shortness_of_breath,Kidney disease,0.4
+chest_pain,Heart disease,0.8
+shortness_of_breath,Heart disease,0.7
+fatigue,Heart disease,0.5
+sweating,Heart disease,0.5
+headache,Hypertension,0.5
+dizziness,Hypertension,0.5
+shortness_of_breath,Hypertension,0.4
+shortness_of_breath,Anxiety disorder,0.4
+dizziness,Anxiety disorder,0.5
+sweating,Anxiety disorder,0.5
+chest_pain,Anxiety disorder,0.3
+headache,Stress disorder,0.5
+fatigue,Stress disorder,0.5
+headache,Migraine,0.8
+nausea,Migraine,0.5
+vomiting,Migraine,0.4
+eye_redness,Conjunctivitis,0.7
+eye_pain,Conjunctivitis,0.6
+blurry_vision,Conjunctivitis,0.4
+ear_pain,Otitis externa,0.8
+ear_discharge,Otitis externa,0.6
+fever,Otitis externa,0.3
+joint_pain,Arthritis,0.8
+back_pain,Arthritis,0.4
+swollen_glands,Arthritis,0.3
+hoarse_voice,Laryngitis,0.8
+sore_throat,Laryngitis,0.6
+cough,Laryngitis,0.4
+fever,Meningitis,0.7
+headache,Meningitis,0.7
+neck_stiffness,Meningitis,0.8
+vomiting,Meningitis,0.5
+rash,Meningitis,0.4
+swollen_glands,Common cold,0.41
+heartburn,UTI,0.47
+loss_of_balance,Heart disease,0.49
+swollen_glands,Migraine,0.33
+abdominal_cramps,Otitis externa,0.39
+neck_stiffness,Pneumonia,0.46
+eye_redness,UTI,0.41
+headache,Kidney disease,0.44
+sore_throat,Arthritis,0.51
+sweating,COPD,0.49
+back_pain,Migraine,0.54
+lower_back_pain,UTI,0.49
+runny_nose,Conjunctivitis,0.42
+cough,Kidney disease,0.34
+constipation,Migraine,0.49
+numbness,Food poisoning,0.38
+joint_pain,Laryngitis,0.42
+nausea,Stress disorder,0.36
+constipation,Hypertension,0.41
+eye_redness,Pneumonia,0.48
+chills,Common cold,0.51
+hoarse_voice,UTI,0.4
+diarrhea,Arthritis,0.47
+fatigue,Anxiety disorder,0.35
+swollen_glands,Conjunctivitis,0.47
+sneezing,Kidney disease,0.5
+abdominal_cramps,Hypertension,0.44
+constipation,UTI,0.42
+ear_pain,Arthritis,0.49
+sweating,Hypertension,0.44
+ear_pain,Common cold,0.38
+cough,Anxiety disorder,0.41
+itchy_skin,COPD,0.51
+sore_throat,Otitis externa,0.37
+chills,Laryngitis,0.47
+ear_pain,COVID-19,0.5
+constipation,Meningitis,0.4
+dizziness,Gastroenteritis,0.31
+chest_pain,COVID-19,0.48
+abdominal_cramps,Stress disorder,0.34
+loss_of_appetite,Laryngitis,0.34
+joint_pain,Pneumonia,0.38
+blurry_vision,Stress disorder,0.39
+chest_pain,Meningitis,0.33
+numbness,Gastroenteritis,0.53
+diarrhea,Kidney disease,0.54
+swollen_glands,COPD,0.48
+abdominal_cramps,Conjunctivitis,0.37
+chest_pain,Common cold,0.53
+abdominal_cramps,COVID-19,0.35
+chills,Migraine,0.44
+dizziness,Heart disease,0.51
+night_sweats,Flu,0.48
+leg_swelling,Stress disorder,0.46
+eye_pain,COVID-19,0.46
+itchy_skin,Conjunctivitis,0.31
+nausea,Pneumonia,0.38
+chest_pain,Stress disorder,0.45
+dizziness,Conjunctivitis,0.53
+eye_pain,Meningitis,0.39
+eye_pain,Anxiety disorder,0.31
+numbness,Pneumonia,0.42
+swollen_glands,Kidney disease,0.32
+nausea,COPD,0.42
+neck_stiffness,UTI,0.44
+abdominal_cramps,Heart disease,0.37
+loss_of_appetite,Heart disease,0.41
+fever,COPD,0.51
+shoulder_pain,Flu,0.34
+ear_pain,Gastroenteritis,0.33
+constipation,Stress disorder,0.37
+constipation,Asthma,0.48
+swollen_glands,Laryngitis,0.33
+shoulder_pain,Anxiety disorder,0.36
+joint_pain,Heart disease,0.51
+hoarse_voice,Kidney disease,0.38
+numbness,Asthma,0.37
+loss_of_appetite,Anxiety disorder,0.36
+dizziness,Pneumonia,0.31
+leg_swelling,COPD,0.55
+lower_back_pain,Pneumonia,0.49
+lower_back_pain,Otitis externa,0.52
+rash,Kidney disease,0.49
+constipation,Gastroenteritis,0.39
+chest_pain,Arthritis,0.49
+neck_stiffness,Flu,0.36
+shortness_of_breath,Flu,0.51
+fatigue,Arthritis,0.34
+eye_pain,Food poisoning,0.52
+chills,COPD,0.49
+loss_of_appetite,Kidney disease,0.34
+fever,Laryngitis,0.36
+constipation,Flu,0.33
+loss_of_appetite,COPD,0.47
+runny_nose,UTI,0.5
+dehydration,Flu,0.48
