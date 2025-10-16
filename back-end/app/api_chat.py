@@ -101,49 +101,47 @@ def extract_symptoms(text):
 
 
 # ✅ Improved fuzzy-matching get_next_question()
-def get_next_question(symptom, step, lang="english", asked=None):
-    """Retrieve next follow-up question for a symptom (max 4)."""
+def get_next_question(symptom, step, lang="english", asked=None, asked_global=None):
+    """Retrieve next follow-up question deterministically (max 4)."""
     if not symptom or pd.isna(symptom):
         sub = df_followup[df_followup["symptom"] == "general"]
     else:
         sym_lower = str(symptom).strip().lower()
-
-        # ✅ exact match first
         sub = df_followup[df_followup["symptom"] == sym_lower]
-
-        # ✅ partial match (e.g. 'lower back pain' matches 'back pain')
         if sub.empty:
-            sub = df_followup[
-                df_followup["symptom"].apply(lambda x: sym_lower in str(x))
-            ]
-
-        # ✅ final fallback to general
+            sub = df_followup[df_followup["symptom"].apply(lambda x: sym_lower in str(x))]
         if sub.empty:
             sub = df_followup[df_followup["symptom"] == "general"]
 
     question_col = "question_kriol" if lang == "kriol" else "question_en"
-
     if question_col not in sub.columns:
         return None
 
     questions = sub.sort_values("order")[question_col].dropna().tolist()
-
+    # กรองที่ถามไปแล้วในอาการนี้
     if asked:
         questions = [q for q in questions if q not in asked]
 
+    # กรองแบบ global (ข้ามอาการ)
+    if asked_global is not None:
+        filtered = []
+        for q in questions:
+            key = normalize_qtext(q, symptom)
+            if key not in asked_global:
+                filtered.append(q)
+        questions = filtered
+
+    # เมื่อคำถามหมด ให้ fallback ไป general (แบบไม่ซ้ำ global)
     if not questions:
         sub = df_followup[df_followup["symptom"] == "general"]
         questions = sub.sort_values("order")[question_col].dropna().tolist()
+        if asked:
+            questions = [q for q in questions if q not in asked]
+        if asked_global is not None:
+            questions = [q for q in questions if normalize_qtext(q, symptom) not in asked_global]
 
+    # จำกัดสูงสุด 4 ข้อ และดึงตาม step แบบกำหนดแน่นอน
     questions = questions[:4]
-    random.shuffle(questions)
-
-    print(
-        f"[DEBUG] Matching symptom: '{symptom}' in followup:",
-        df_followup["symptom"].unique(),
-    )
-
-    # ✅ Always return something (even from 'general')
     return questions[step] if step < len(questions) else None
 
 
@@ -254,43 +252,41 @@ def chat():
     """Main conversational route — manages symptom detection and follow-up flow."""
     data = request.get_json()
     user_id = data.get("user", "default")
-    text = data.get("text", "").lower().strip()
-
+    text = (data.get("text") or "").lower().strip()
     if not text:
         return jsonify({"message": "Please describe what you feel."})
 
-    # 🔤 Detect language (English / Kriol)
     lang = data.get("lang", detect_language(text))
 
-    # 🧠 Initialize session if new user
+    # Init / backfill session keys
     if user_id not in sessions:
-        sessions[user_id] = {
-            "symptoms": [],
-            "queue": [],
-            "done": set(),
-            "step": 0,
-            "current_symptom": None,
-            "last_question": None,
-            "asked_questions": {},
-        }
-
+        sessions[user_id] = {}
     s = sessions[user_id]
+    s.setdefault("symptoms", [])
+    s.setdefault("queue", [])
+    s.setdefault("current_symptom", None)
+    s.setdefault("step", 0)
+    s.setdefault("asked_questions", {})
+    s.setdefault("asked_global", set())   # ✅ สำคัญ
+    s.setdefault("done", set())
+    s.setdefault("last_question", None)
 
     # 0️⃣ Handle "yes" response to last question
     if s.get("last_question"):
         for known in df_symptom["symptom"].dropna().unique():
             if known.lower() in s["last_question"].lower():
-                if any(
-                    w in text for w in ["yes", "yeah", "yep", "i do", "true", "correct"]
-                ):
+                if any(w in text for w in ["yes", "yeah", "yep", "i do", "true", "correct"]):
                     enqueue_symptoms(s, [known])
                     s["current_symptom"] = known
                     s["step"] = 0
                     q = get_next_question(
-                        known, 0, lang, asked=s["asked_questions"].get(known, [])
+                        known, 0, lang,
+                        asked=s["asked_questions"].get(known, []),
+                        asked_global=s["asked_global"]               # ✅ เพิ่ม
                     )
                     if q:
                         s["asked_questions"].setdefault(known, []).append(q)
+                        s["asked_global"].add(normalize_qtext(q, known))  # ✅ เพิ่ม
                         q = format_question(q, known)
                         s["last_question"] = q
                         print(f"✅ User confirmed symptom: {known}")
@@ -304,20 +300,22 @@ def chat():
         s["step"] = 0
 
         q = get_next_question(
-            s["current_symptom"],
-            s["step"],
-            lang,
+            s["current_symptom"], s["step"], lang,
             asked=s["asked_questions"].get(s["current_symptom"], []),
+            asked_global=s["asked_global"]                       # ✅ เพิ่ม
         )
         if q:
             s["asked_questions"].setdefault(s["current_symptom"], []).append(q)
-        q = format_question(q, s["current_symptom"])
-        s["last_question"] = q
+            s["asked_global"].add(normalize_qtext(q, s["current_symptom"]))  # ✅ เพิ่ม
+            q_fmt = format_question(q, s["current_symptom"])
+        else:
+            q_fmt = None
+        s["last_question"] = q_fmt
 
         msg = (
-            f"You mentioned {', '.join(found)}. {q}"
+            f"You mentioned {', '.join(found)}. {q_fmt or ''}".strip()
             if lang == "english"
-            else f"Yu bin tokbaut {', '.join(found)}. {q}"
+            else f"Yu bin tokbaut {', '.join(found)}. {q_fmt or ''}".strip()
         )
         print(f"🩺 New symptom detected: {found}")
         return jsonify({"message": msg, "lang": lang})
@@ -325,18 +323,18 @@ def chat():
     # 2️⃣ Continue next question for current symptom
     if s["current_symptom"]:
         next_q = get_next_question(
-            s["current_symptom"],
-            s["step"] + 1,
-            lang,
+            s["current_symptom"], s["step"] + 1, lang,
             asked=s["asked_questions"].get(s["current_symptom"], []),
+            asked_global=s["asked_global"]                       # ✅ มี
         )
         if next_q:
             s["step"] += 1
             s["asked_questions"].setdefault(s["current_symptom"], []).append(next_q)
-            next_q = format_question(next_q, s["current_symptom"])
-            s["last_question"] = next_q
-            print(f"🔁 Follow-up question for {s['current_symptom']}: {next_q}")
-            return jsonify({"message": next_q, "lang": lang})
+            s["asked_global"].add(normalize_qtext(next_q, s["current_symptom"]))
+            next_q_fmt = format_question(next_q, s["current_symptom"])
+            s["last_question"] = next_q_fmt
+            print(f"🔁 Follow-up question for {s['current_symptom']}: {next_q_fmt}")
+            return jsonify({"message": next_q_fmt, "lang": lang})
 
         s["done"].add(s["current_symptom"])
         s["current_symptom"] = None
@@ -345,19 +343,19 @@ def chat():
     # 3️⃣ Move to next symptom in queue
     if pick_next_symptom(s):
         q0 = get_next_question(
-            s["current_symptom"],
-            0,
-            lang,
+            s["current_symptom"], 0, lang,
             asked=s["asked_questions"].get(s["current_symptom"], []),
+            asked_global=s["asked_global"]                       # ✅ มี
         )
         if q0:
             s["asked_questions"].setdefault(s["current_symptom"], []).append(q0)
-        q0 = format_question(q0, s["current_symptom"])
-        s["last_question"] = q0
+            s["asked_global"].add(normalize_qtext(q0, s["current_symptom"]))
+        q0_fmt = format_question(q0, s["current_symptom"]) if q0 else None
+        s["last_question"] = q0_fmt
         intro = (
-            f"Okay, let's talk about {s['current_symptom']}. {q0}"
+            f"Okay, let's talk about {s['current_symptom']}. {q0_fmt or ''}".strip()
             if lang == "english"
-            else f"Orait, yumi tokbaut {s['current_symptom']}. {q0}"
+            else f"Orait, yumi tokbaut {s['current_symptom']}. {q0_fmt or ''}".strip()
         )
         print(f"➡️ Switching to next symptom: {s['current_symptom']}")
         return jsonify({"message": intro, "lang": lang})
@@ -366,37 +364,26 @@ def chat():
     if any(k in text for k in ["also", "another", "else", "too", "moa", "nara wan"]):
         s["current_symptom"] = None
         s["last_question"] = None
-        msg = (
-            "Tell me the other symptom you feel."
-            if lang == "english"
-            else "Yu bin feelim nara sik?"
-        )
+        msg = "Tell me the other symptom you feel." if lang == "english" else "Yu bin feelim nara sik?"
         print("➕ Asking for additional symptoms.")
         return jsonify({"message": msg, "lang": lang})
 
     print(f"🧩 Current session symptoms: {s['symptoms']}")
 
-    # 5️⃣ Return final results and reset session
-    # 👉 You can switch between ML or rule-based here
-    # result = predict_disease(s["symptoms"])  # rule-based
-    result = predict_disease_ml(s["symptoms"])  # test ML version
-
+    # 5️⃣ Final predictions
+    result = predict_disease_ml(s["symptoms"])
     top = list(result.keys())[:2]
     details = get_symptom_details(s["symptoms"])
-
     msg = (
         f"Based on your symptoms ({', '.join(s['symptoms'])}), it might be {', '.join(top)}."
         if lang == "english"
         else f"From yu sik ({', '.join(s['symptoms'])}), bai im laik {', '.join(top)}."
     )
-
     response = {
         "message": msg,
         "symptoms": s["symptoms"],
         "symptom_details": details,
-        "predictions": [
-            {"disease": d, "score": round(v, 2)} for d, v in result.items()
-        ],
+        "predictions": [{"disease": d, "score": round(v, 2)} for d, v in result.items()],
         "lang": lang,
         "done": True,
     }
@@ -405,7 +392,7 @@ def chat():
     print(response)
     print("──────────────────────────────")
 
-    # Reset session
+    # ✅ Reset with all keys (รวม asked_global)
     sessions[user_id] = {
         "symptoms": [],
         "queue": [],
@@ -414,9 +401,10 @@ def chat():
         "current_symptom": None,
         "last_question": None,
         "asked_questions": {},
+        "asked_global": set(),     # ✅ ใส่กลับ
     }
-
     return jsonify(response)
+
 
 
 # =============================================
@@ -475,3 +463,12 @@ def get_suggestions():
 
     print(f"✅ Found {len(results)} suggestion(s)")
     return jsonify({"suggestions": results})
+
+
+def normalize_qtext(q: str, symptom: str) -> str:
+    if not q:
+        return ""
+    # แทนชื่ออาการด้วย placeholder เพื่อให้คำถามที่เหมือนกัน across symptoms นับเป็นอันเดียว
+    q = q.replace(symptom or "", "{symptom}")
+    q = re.sub(r"\s+", " ", q.strip().lower())
+    return q
