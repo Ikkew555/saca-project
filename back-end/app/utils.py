@@ -29,6 +29,104 @@ def normalize_text(s: str) -> str:
 
 MISHEAR_MAP = {
     # Kriol/phonetic → English
+    #new data -----------------------------------
+    # ── General / ทั่วไป ─────────────────────────────────────────
+    "sik": "sick",
+    "mi sik": "sick",
+    "mi no gud": "fatigue",
+    "no gud": "fatigue",
+    "feel sik": "fatigue",
+    "weak la bodi": "fatigue",
+    "taya": "fatigue",
+    "hot bodi": "fever",
+    "hot la bodi": "fever",
+    "kolda": "chills",
+    "shiva": "chills",
+
+    # ── Head / Neuro ────────────────────────────────────────────
+    "sik la hed": "headache",
+    "sik la head": "headache",
+    "hed eik": "headache",
+    "hed pain": "headache",
+    "hed spin": "dizziness",
+    "spinning head": "dizziness",
+    "giddy": "dizziness",
+    "dizzy": "dizziness",
+    "no si gud": "blurred vision",
+    "blurry ai": "blurred vision",
+
+    # ── Chest / Respiratory ─────────────────────────────────────
+    "sik la chest": "chest pain",
+    "sik chest": "chest pain",
+    "pain la chest": "chest pain",
+    "bref short": "shortness of breath",
+    "short bref": "shortness of breath",
+    "no breth gud": "shortness of breath",
+    "hard fo breth": "shortness of breath",
+    "breath hard": "hard to breathe",
+    "kof": "cough",
+    "got kof": "cough",
+    "dry kof": "dry cough",
+    "wet kof": "productive cough",
+    "wheez": "wheeze",
+    "nois brethin": "wheeze",
+
+    # ── Throat / ENT ────────────────────────────────────────────
+    "sik la troat": "sore throat",
+    "sik la throat": "sore throat",
+    "troat pain": "sore throat",
+    "troat hot": "sore throat",
+    "runny nose": "runny nose",
+    "blok nose": "blocked nose",
+    "ear pain": "ear pain",
+    "sik la iya": "ear pain",
+
+    # ── GI (ท้อง) ───────────────────────────────────────────────
+    "bel sik": "abdominal pain",
+    "sik la bel": "abdominal pain",
+    "bel pain": "abdominal pain",
+    "soram bel": "abdominal pain",
+    "laf bel": "abdominal cramps",
+    "hebi bel": "bloating",
+    "puke": "vomiting",
+    "sek up": "nausea",
+    "feel puke": "nausea",
+    "run bel": "diarrhea",
+    "runny bel": "diarrhea",
+    "stin bel": "constipation",
+    "gas bel": "bloating",
+
+    # ── GU / UTI ────────────────────────────────────────────────
+    "piss hot": "dysuria",
+    "pisi hot": "dysuria",
+    "piss planti": "urinary frequency",
+    "piss smol smol": "urinary frequency",
+    "no piss gud": "urinary retention",
+    "bela piss": "hematuria",
+
+    # ── Skin ────────────────────────────────────────────────────
+    "rais": "rash",
+    "itchi": "itching",
+    "skin hot": "rash",
+    "skin red": "rash",
+    "swellap": "swelling",
+    "swolap": "swelling",
+
+    # ── Systemic / อื่น ๆ ──────────────────────────────────────
+    "pain evri wea": "body aches",
+    "soram bodi": "body aches",
+    "joint pain": "joint pain",
+    "bon pain": "bone pain",
+    "no kaikai": "loss of appetite",
+    #old --------------------
+    "sik la chest": "chest pain",
+    "sik chest": "chest pain",
+    "sik la hed": "headache",
+    "sik la head": "headache",
+    "sik la bel": "abdominal pain",
+    "bel sik": "abdominal pain",
+    "sik la troat": "sore throat",
+    "sik la throat": "sore throat",
     "sik": "sick",
     "hed eik": "headache",
     "hedache": "headache",
@@ -47,8 +145,66 @@ MISHEAR_MAP = {
     "maybe": "",
     "like": "",
     "and": "",
+    "dizzy": "dizziness",
+    "giddy": "dizziness",
+    "head spin": "dizziness",
+    "spinning head": "dizziness",
+    "vertigo": "dizziness",
 }
 
+KRIOL_SYNONYMS = {
+    # General
+    "fever": ["hot bodi", "hot la bodi", "hot body"],
+    "chills": ["kolda", "shiva"],
+    "fatigue": ["mi no gud", "no gud", "feel sik", "weak la bodi", "taya"],
+    "unwell": ["mi no gud", "no gud", "feel sik"],
+
+    # Head / Neuro
+    "headache": ["sik la hed", "sik la head", "hed eik", "hed pain"],
+    "dizziness": ["hed spin", "head spin", "giddy", "spinning head", "dizzy"],
+    "blurred vision": ["no si gud", "blurry ai"],
+
+    # Chest / Respiratory
+    "chest pain": ["sik la chest", "sik chest", "pain la chest"],
+    "shortness of breath": ["bref short", "short bref", "no breth gud", "hard fo breth"],
+    "hard to breathe": ["breath hard"],
+    "cough": ["kof", "got kof"],
+    "dry cough": ["dry kof"],
+    "productive cough": ["wet kof"],
+    "wheeze": ["wheez", "nois brethin"],
+
+    # Throat / ENT
+    "sore throat": ["sik la troat", "sik la throat", "troat pain", "troat hot"],
+    "runny nose": ["runny nose"],
+    "blocked nose": ["blok nose"],
+    "ear pain": ["sik la iya", "ear pain"],
+
+    # GI
+    "abdominal pain": ["bel sik", "sik la bel", "bel pain", "soram bel"],
+    "abdominal cramps": ["laf bel"],
+    "bloating": ["hebi bel", "gas bel"],
+    "vomiting": ["puke"],
+    "nausea": ["sek up", "feel puke"],
+    "diarrhea": ["run bel", "runny bel"],
+    "constipation": ["stin bel"],
+
+    # GU / UTI
+    "dysuria": ["piss hot", "pisi hot"],
+    "urinary frequency": ["piss planti", "piss smol smol"],
+    "urinary retention": ["no piss gud"],
+    "hematuria": ["bela piss"],
+
+    # Skin
+    "rash": ["rais", "skin hot", "skin red"],
+    "itching": ["itchi"],
+    "swelling": ["swellap", "swolap"],
+
+    # Systemic
+    "body aches": ["pain evri wea", "soram bodi"],
+    "joint pain": ["joint pain"],
+    "bone pain": ["bon pain"],
+    "loss of appetite": ["no kaikai"],
+}
 
 def apply_mishear(text: str, mishear_map: dict) -> str:
     """แทนที่คำที่มักได้ยินเพี้ยนแบบ word-boundary (ไม่ไปโดนคำอื่น)"""
@@ -111,7 +267,7 @@ def load_symptom_disease_map(path: str) -> pd.DataFrame:
 # -------- Synonyms --------
 SYM_SYNONYMS = {
     "cough": ["coughing"],
-    "chest pain": ["tight chest", "pressure in chest", "pain in chest"],
+    "chest pain": ["tight chest", "pressure in chest", "pain in chest", "sik la chest"],
     "shortness of breath": [
         "breathlessness",
         "hard to breathe",
@@ -125,30 +281,40 @@ SYM_SYNONYMS = {
     "wheeze": ["wheezing"],
     "fever": ["high temperature", "temperature"],
     "fatigue": ["tiredness", "exhaustion"],
-    "dizziness": ["lightheaded"],
+    "dizziness": ["lightheaded", "dizzy", "giddy", "head spin", "spinning head", "vertigo"],
     "rash": ["skin rash"],
 }
 
 
 def _build_patterns(lex_df: pd.DataFrame):
     pairs = []
+    # จาก lexicon เดิม
     for _, row in lex_df.iterrows():
-        term = row["term_norm"]
-        sym = row["symptom_norm"]
+        term = row["term_norm"]; sym = row["symptom_norm"]
         if term and sym:
             pairs.append((term, sym))
+
+    # จาก synonyms อังกฤษ
     for canonical, variants in SYM_SYNONYMS.items():
         can = normalize_text(canonical)
         for v in variants:
             pairs.append((normalize_text(v), can))
         pairs.append((can, can))
+
+    # ✅ จาก KRIOL_SYNONYMS (ใหม่)
+    for canonical, variants in KRIOL_SYNONYMS.items():
+        can = normalize_text(canonical)
+        for v in variants:
+            pairs.append((normalize_text(v), can))
+        pairs.append((can, can))
+
     compiled = []
     for term, sym in pairs:
         if not term:
             continue
         pat = r"\b" + r"\s+".join(map(re.escape, term.split())) + r"\b"
         compiled.append((re.compile(pat), sym))
-    compiled.sort(key=lambda x: -len(x[0].pattern))
+    compiled.sort(key=lambda x: -len(x[0].pattern))  # ยาวก่อน
     return compiled
 
 
@@ -185,15 +351,20 @@ def extract_symptoms(text: str, lex_df: pd.DataFrame) -> list[str]:
     # --- 3️⃣ Prepare vocabulary for typo correction ---
     vocab = list(lex_df["symptom"].dropna().unique())
     vocab += list(lex_df["kriol_phrase"].dropna().unique()) if "kriol_phrase" in lex_df.columns else []
+    for can, vars in SYM_SYNONYMS.items():
+        vocab.append(can)
+        vocab.extend(vars)
     vocab = [normalize_text(v) for v in vocab if v]
 
     # --- 4️⃣ Tokenize text into possible words and 2-word phrases ---
     tokens = t.split()
     token_pairs = [" ".join(tokens[i:i+2]) for i in range(len(tokens) - 1)]
+    token_triples = [" ".join(tokens[i:i+3]) for i in range(len(tokens) - 2)]
     all_tokens = tokens + token_pairs  # single + two-word phrases
 
     corrected_words = []
     for token in all_tokens:
+        cutoff = 0.6 if len(token) <= 5 else 0.75
         match = difflib.get_close_matches(token, vocab, n=1, cutoff=0.75)
         if match:
             corrected_words.append(match[0])
@@ -205,10 +376,20 @@ def extract_symptoms(text: str, lex_df: pd.DataFrame) -> list[str]:
             (lex_df["symptom"].str.lower() == word)
             | (("kriol_phrase" in lex_df.columns) & (lex_df["kriol_phrase"].str.lower() == word))
         ]
+        mapped = False
         for _, row in match_rows.iterrows():
             symptom_name = row["symptom"]
             if symptom_name not in found:
                 found.append(symptom_name)
+                mapped = True
+        if mapped:
+            continue
+
+        for can, vars in SYM_SYNONYMS.items():
+            if word == normalize_text(can) or word in [normalize_text(v) for v in vars]:
+                if can not in found:
+                    found.append(can)
+            break
 
     # --- 6️⃣ Clean up duplicates while preserving order ---
     out, seen = [], set()
