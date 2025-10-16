@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useOutletContext } from "react-router-dom";
 import "./chat.css";
 import fever from "./assets/symptom/fever.png";
 import cough from "./assets/symptom/cough.png";
@@ -12,15 +13,28 @@ import micIcon from "./assets/icons/microphone-white-shape.png";
 import stopIcon from "./assets/icons/microphone-white-shape.png";
 
 function Chatbot() {
+  const { externalMessages = [], onExternalMessagesChange = () => {} } =
+    useOutletContext();
+
   const [text, setText] = useState("");
-  const [chat, setChat] = useState([]);
+  // เริ่มต้นเป็น [] ก่อน แล้วค่อยซิงก์ตาม context ภายหลัง
+  const [messages, setMessages] = useState([]);
+  // const [text, setText] = useState("");
+  // const [chat, setChat] = useState([]);
+  // const [messages, setMessages] = useState(externalMessages);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isFinalLoading, setIsFinalLoading] = useState(false);
   const [showLangPopup, setShowLangPopup] = useState(true);
+  // const { externalMessages = [], onExternalMessagesChange = () => {} } = useOutletContext() || {};
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
+
+  // เมื่อ context เปลี่ยน (เช่นสลับห้องแชท) ให้ซิงก์ข้อความ
+  useEffect(() => {
+    setMessages(Array.isArray(externalMessages) ? externalMessages : []);
+  }, [externalMessages]);
 
   // 🌐 Language setup
   const [language, setLanguage] = useState(
@@ -30,22 +44,36 @@ function Chatbot() {
 
   // 👋 Greeting message on load
   useEffect(() => {
-    setChat([
-      {
-        sender: "bot",
-        text:
-          language === "kriol"
-            ? "👋 Helo! Mi SACA. Yu save tokbaut yu sik o tap wan pichu we luk semsem long yu sik blo stat."
-            : "👋 Hi there! I’m your Smart Clinical Assistant. You can describe your symptoms below or tap an image that looks similar to your symptom to get started.",
-      },
-    ]);
+    if ((messages?.length || 0) === 0) {
+      pushAndSync([
+        {
+          sender: "bot",
+          text:
+            language === "kriol"
+              ? "👋 Helo! Mi SACA. Yu save tokbaut yu sik o tap wan pichu we luk semsem long yu sik blo stat."
+              : "👋 Hi there! I’m your Smart Clinical Assistant. You can describe your symptoms below or tap an image that looks similar to your symptom to get started.",
+        },
+      ]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
+
+// helper: อัปเดตทั้ง state ภายใน + แจ้ง Layout ให้บันทึกเป็นประวัติ
+  const pushAndSync = (next) => {
+    setMessages(next);
+    onExternalMessagesChange(next);
+  };
+
+  // เมื่อเปลี่ยน session จาก Sidebar ให้โหลดข้อความชุดนั้น
+  useEffect(() => {
+    setMessages(externalMessages || []);
+  }, [externalMessages]);
 
   // Auto-scroll
   useEffect(() => {
     if (chatEndRef.current)
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [chat]);
+  }, [messages]);
 
   const symptomImages = [
     { name: "fever", file: fever },
@@ -63,12 +91,17 @@ function Chatbot() {
 
     // If clicked image
     if (imageFile) {
-      setChat((prev) => [
-        ...prev,
+      // setChat((prev) => [
+      //   ...prev,
+      //   { sender: "user", text: userInput, type: "image", file: imageFile },
+      // ]);
+      pushAndSync([
+        ...messages,
         { sender: "user", text: userInput, type: "image", file: imageFile },
       ]);
     } else {
-      setChat((prev) => [...prev, { sender: "user", text: userInput }]);
+      // setChat((prev) => [...prev, { sender: "user", text: userInput }]);
+      pushAndSync([...messages, { sender: "user", text: userInput }]);
     }
 
     setText("");
@@ -116,15 +149,33 @@ function Chatbot() {
 
       setTimeout(() => {
         setIsTyping(false);
+        // const botMsg = { sender: "bot", text: "" };
+        // setChat((prev) => [...prev, botMsg]);
         const botMsg = { sender: "bot", text: "" };
-        setChat((prev) => [...prev, botMsg]);
+        pushAndSync([...messages, { sender: "user", text: userInput }, botMsg]);
 
+        // let i = 0;
+        // const interval = setInterval(() => {
+        //   i++;
+        //   setChat((prev) => {
+        //     const updated = [...prev];
+        //     updated[updated.length - 1].text = fullHTML.slice(0, i);
+        //     return updated;
+        //   });
+        //   if (i >= fullHTML.length) clearInterval(interval);
+        // }, 20);
+
+        // typing effect: อัปเดตบับเบิลล่าสุดทีละตัวอักษรและซิงก์กับ Layout
         let i = 0;
         const interval = setInterval(() => {
           i++;
-          setChat((prev) => {
+          setMessages((prev) => {
             const updated = [...prev];
-            updated[updated.length - 1].text = fullHTML.slice(0, i);
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              text: fullHTML.slice(0, i),
+            };
+            onExternalMessagesChange(updated); // sync ไป Layout ทุก tick
             return updated;
           });
           if (i >= fullHTML.length) clearInterval(interval);
@@ -155,15 +206,25 @@ function Chatbot() {
         formData.append("file", blob, "voice.webm");
 
         // 👤 Show user message in chat
-        setChat((prev) => [
-          ...prev,
+        // setChat((prev) => [
+        //   ...prev,
+        //   { sender: "user", text: "🎤 Voice message sent." },
+        // ]);
+        pushAndSync([
+          ...messages,
           { sender: "user", text: "🎤 Voice message sent." },
         ]);
 
         // 🕐 Show analyzing loader
+        // setIsTyping(true);
+        // setChat((prev) => [
+        //   ...prev,
+        //   { sender: "bot", text: "🎧 Analyzing your voice input..." },
+        // ]);
         setIsTyping(true);
-        setChat((prev) => [
-          ...prev,
+        pushAndSync([
+          ...messages,
+          { sender: "user", text: "🎤 Voice message sent." },
           { sender: "bot", text: "🎧 Analyzing your voice input..." },
         ]);
 
@@ -186,12 +247,27 @@ function Chatbot() {
                   : "I’ve listened to your voice and analyzed the information."),
             };
 
-            setChat((prev) => [...prev, botMsg]);
+            // setChat((prev) => [...prev, botMsg]);
+            pushAndSync([
+              ...messages,
+              { sender: "user", text: "🎤 Voice message sent." },
+              botMsg,
+            ]);
           }, 1500);
         } catch (err) {
           console.error("Voice processing error:", err);
-          setChat((prev) => [
-            ...prev,
+          // setChat((prev) => [
+          //   ...prev,
+          //   {
+          //     sender: "bot",
+          //     text:
+          //       language === "kriol"
+          //         ? "Sori, mi no bin save lisin propali. Trai gen."
+          //         : "Sorry, I couldn’t process your voice. Please try again.",
+          //   },
+          // ]);
+          pushAndSync([
+            ...messages,
             {
               sender: "bot",
               text:
@@ -270,7 +346,7 @@ function Chatbot() {
 
       {/* 💬 Chat Area */}
       <div className="chat-box">
-        {chat.length <= 1 && (
+        {messages.length <= 1 && (
           <div className="symptom-gallery">
             <div className="gallery-grid">
               {symptomImages.map((sym, i) => (
@@ -286,7 +362,7 @@ function Chatbot() {
           </div>
         )}
 
-        {chat.map((msg, idx) => (
+        {messages.map((msg, idx) => (
           <div
             key={idx}
             className={`chat-message ${msg.sender === "user" ? "user" : "bot"}`}
