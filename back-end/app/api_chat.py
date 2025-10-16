@@ -4,6 +4,8 @@ import random
 from joblib import load
 import numpy as np
 import re
+from app.utils import preprocess_text, MISHEAR_MAP
+import hashlib
 
 api_chat = Blueprint("chat_api", __name__)
 suggestion_bp = Blueprint("suggestion_bp", __name__)
@@ -243,6 +245,83 @@ def predict_disease_ml(symptoms):
     top_idx = np.argsort(pred_proba)[::-1][:3]
     return {model.classes_[i]: float(pred_proba[i]) for i in top_idx}
 
+# ===== Screening buddies: อาการที่มักมาคู่กัน (แก้/ขยายได้) =====
+SCREEN_BUDDIES = {
+    "headache": ["fever", "cough", "sore throat", "nausea", "dizziness"],
+    "chest pain": ["shortness of breath", "cough", "fever", "dizziness"],
+    "cough": ["fever", "sore throat", "shortness of breath", "wheeze"],
+    "fever": ["cough", "sore throat", "headache", "rash", "fatigue"],
+    "sore throat": ["cough", "fever", "headache"],
+    "shortness of breath": ["cough", "wheeze", "chest pain"],
+    "abdominal pain": ["nausea", "vomiting", "diarrhea", "fever"],
+    "nausea": ["vomiting", "abdominal pain", "dizziness"],
+    "vomiting": ["nausea", "abdominal pain", "diarrhea", "fever"],
+    "diarrhea": ["abdominal pain", "vomiting", "fever"],
+    "rash": ["fever", "itching", "headache"],
+}
+
+TEMPLATES_EN = [
+    "Do you also have {list}?",
+    "Have you noticed {list} too?",
+    "Along with that, any {list}?",
+    "Are you experiencing {list} as well?",
+]
+TEMPLATES_KR = [  # Kriol แบบง่าย
+    "Yu gat {list} tu?",
+    "Wit dat, eni {list}?",
+    "Yu bin notis {list} tu?",
+    "Yu gat {list} la?",
+]
+
+def _choose_template(lang: str, key: str) -> str:
+    arr = TEMPLATES_KR if lang == "kriol" else TEMPLATES_EN
+    idx = int(hashlib.sha256(key.encode()).hexdigest(), 16) % len(arr)
+    return arr[idx]
+
+def _fmt_list(items: list[str], lang: str) -> str:
+    if not items:
+        return ""
+    if len(items) == 1:
+        return items[0]
+    if len(items) == 2:
+        return f"{items[0]} or {items[1]}" if lang == "english" else f"{items[0]} o {items[1]}"
+    # >2
+    return ", ".join(items[:-1]) + (" or " if lang == "english" else " o ") + items[-1]
+
+def get_screening_candidates(current_symptom: str, session, topk: int = 2) -> list[str]:
+    """คืนรายชื่ออาการที่ควรถามต่อ (ยังไม่ได้กล่าวถึง/ถามไปแล้ว) สูงสุด topk"""
+    if not current_symptom:
+        return []
+    cand = SCREEN_BUDDIES.get(current_symptom.lower(), [])
+    if not cand:
+        return []
+    asked_global = session.get("asked_global", set())
+    known = set(map(str.lower, session.get("symptoms", [])))
+    # ตัดสิ่งที่ผู้ใช้พูดแล้ว/เพิ่งถามไปแล้ว (ด้วย asked_global + last_question)
+    out = []
+    for c in cand:
+        if c.lower() in known:
+            continue
+        # กันซ้ำด้วย asked_global โดยสร้างคีย์แบบเดียวกับคำถามจริง
+        qkey = f"screen:{current_symptom.lower()}->{c.lower()}"
+        if qkey in asked_global:
+            continue
+        out.append(c)
+        if len(out) >= topk:
+            break
+    return out
+
+def build_screen_question(current_symptom: str, session, lang: str = "english") -> tuple[str, str] | tuple[None, None]:
+    """สร้างคำถามคัดกรองและคีย์กันซ้ำ (qtext, qkey)"""
+    cands = get_screening_candidates(current_symptom, session, topk=2)
+    if not cands:
+        return None, None
+    lst = _fmt_list(cands, lang)
+    template = _choose_template(lang, f"{current_symptom}-{session.get('step',0)}")
+    qtext = template.format(list=lst)
+    # คีย์กันซ้ำระดับ global (หนึ่งอาการจะถูก screen แค่ครั้งเดียวต่อชุดคำตอบ)
+    qkey = " && ".join([f"screen:{current_symptom.lower()}->{c.lower()}" for c in cands])
+    return qtext, qkey
 
 # ───────────────────────────────
 # Chat API Route (no major change)
@@ -252,7 +331,8 @@ def chat():
     """Main conversational route — manages symptom detection and follow-up flow."""
     data = request.get_json()
     user_id = data.get("user", "default")
-    text = (data.get("text") or "").lower().strip()
+    text_raw = data.get("text", "")
+    text = preprocess_text(text_raw, MISHEAR_MAP)
     if not text:
         return jsonify({"message": "Please describe what you feel."})
 
@@ -270,6 +350,7 @@ def chat():
     s.setdefault("asked_global", set())   # ✅ สำคัญ
     s.setdefault("done", set())
     s.setdefault("last_question", None)
+    s.setdefault("asked_screen_for", set())
 
     # 0️⃣ Handle "yes" response to last question
     if s.get("last_question"):
@@ -299,29 +380,48 @@ def chat():
         s["current_symptom"] = found[-1]
         s["step"] = 0
 
+        # --- ลองถามคัดกรอง (screening) ก่อน ---
+        if s["current_symptom"] not in s["asked_screen_for"]:
+            scr_q, scr_key = build_screen_question(s["current_symptom"], s, lang)
+            if scr_q:
+                s["asked_screen_for"].add(s["current_symptom"])
+                s["asked_global"].add(scr_key)
+                s["last_question"] = scr_q
+                print(f"🧭 Screening for {s['current_symptom']}: {scr_q}")
+                return jsonify({"message": scr_q, "lang": lang})
+
+        # --- ถ้าไม่มี screening ให้ถาม follow-up ปกติ ---
         q = get_next_question(
             s["current_symptom"], s["step"], lang,
             asked=s["asked_questions"].get(s["current_symptom"], []),
-            asked_global=s["asked_global"]                       # ✅ เพิ่ม
+            asked_global=s["asked_global"]
         )
         if q:
             s["asked_questions"].setdefault(s["current_symptom"], []).append(q)
-            s["asked_global"].add(normalize_qtext(q, s["current_symptom"]))  # ✅ เพิ่ม
-            q_fmt = format_question(q, s["current_symptom"])
-        else:
-            q_fmt = None
-        s["last_question"] = q_fmt
+            s["asked_global"].add(normalize_qtext(q, s["current_symptom"]))
+            q = format_question(q, s["current_symptom"])
+        s["last_question"] = q
 
         msg = (
-            f"You mentioned {', '.join(found)}. {q_fmt or ''}".strip()
+            f"You mentioned {', '.join(found)}. {q}"
             if lang == "english"
-            else f"Yu bin tokbaut {', '.join(found)}. {q_fmt or ''}".strip()
+            else f"Yu bin tokbaut {', '.join(found)}. {q}"
         )
         print(f"🩺 New symptom detected: {found}")
         return jsonify({"message": msg, "lang": lang})
 
+
     # 2️⃣ Continue next question for current symptom
     if s["current_symptom"]:
+        if s["current_symptom"] not in s["asked_screen_for"]:
+            scr_q, scr_key = build_screen_question(s["current_symptom"], s, lang)
+            if scr_q:
+                s["asked_screen_for"].add(s["current_symptom"])
+                s["asked_global"].add(scr_key)
+                s["last_question"] = scr_q
+                print(f"🧭 Screening for {s['current_symptom']}: {scr_q}")
+                return jsonify({"message": scr_q, "lang": lang})
+            
         next_q = get_next_question(
             s["current_symptom"], s["step"] + 1, lang,
             asked=s["asked_questions"].get(s["current_symptom"], []),
@@ -401,7 +501,8 @@ def chat():
         "current_symptom": None,
         "last_question": None,
         "asked_questions": {},
-        "asked_global": set(),     # ✅ ใส่กลับ
+        "asked_global": set(), 
+        "asked_screen_for": set(),    
     }
     return jsonify(response)
 
