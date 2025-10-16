@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app.cli_match import run_cli_match  # main logic for text
 from app.kriol_stt_predict import transcribe  # voice-to-text
+from app.utils import preprocess_text, MISHEAR_MAP
 from werkzeug.utils import secure_filename
+from app.utils import to_wav_16k_mono
 import os
 
 # ---------------------------------------------------------------------
@@ -71,6 +73,7 @@ def match_symptom():
     try:
         data = request.get_json()
         user_input = (data.get("text") or "").strip()
+        user_input = preprocess_text(user_input_raw, MISHEAR_MAP)
 
         if not user_input:
             return jsonify({"error": "Empty text input"}), 400
@@ -79,7 +82,8 @@ def match_symptom():
 
         # Run CLI matcher logic
         result = run_cli_match(user_input)
-
+        result["input_raw"] = user_input_raw
+        result["input"] = user_input
         # Add human-style message
         result["message"] = make_human_message(result)
         result["input"] = user_input
@@ -109,14 +113,22 @@ def handle_voice():
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
-        print(f"[INFO] Saved uploaded voice file: {file_path}")
+        try:
+                wav_path = to_wav_16k_mono(file_path)   # ✅ ถ้ามีใน utils.py
+                stt_input_path = wav_path
+        except Exception:
+                stt_input_path = file_path  # ถ้า ffmpeg ไม่มี ให้ใช้ไฟล์เดิมต่อไปก่อน
+
+        text_from_audio_raw = transcribe(stt_input_path)
+        print(f"[INFO] Transcribed text (raw): {text_from_audio_raw}")
 
         # Convert voice → text
-        text_from_audio = transcribe(file_path)
-        print(f"[INFO] Transcribed text: {text_from_audio}")
+        text_from_audio = preprocess_text(text_from_audio_raw, MISHEAR_MAP)
+        print(f"[INFO] Transcribed text (pre): {text_from_audio}")
 
         # Run symptom-disease matching
         result = run_cli_match(text_from_audio)
+        result["input_raw"] = text_from_audio_raw
         result["input"] = text_from_audio
         result["message"] = make_human_message(result)
 

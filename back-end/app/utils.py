@@ -4,7 +4,7 @@ import pandas as pd
 from unidecode import unidecode
 import warnings
 import difflib
-
+import os, uuid, subprocess
 
 warnings.filterwarnings("ignore", message="FP16 is not supported on CPU")
 
@@ -27,6 +27,47 @@ def normalize_text(s: str) -> str:
     s = re.sub(r"\s+", " ", s).strip()
     return s
 
+MISHEAR_MAP = {
+    # Kriol/phonetic → English
+    "sik": "sick",
+    "hed eik": "headache",
+    "hedache": "headache",
+    "sot trot": "sore throat",
+    "sot troat": "sore throat",
+    "sot throat": "sore throat",
+    "chest pane": "chest pain",
+    "chest pen": "chest pain",
+    "breath hard": "hard to breathe",
+    "no breath": "cant breathe",
+    # English variants / fillers (ลด noise จาก voice)
+    "tummy bug": "vomiting",
+    "light headed": "lightheaded",
+    "flu": "fever",
+    "i feel": "",
+    "maybe": "",
+    "like": "",
+    "and": "",
+}
+
+
+def apply_mishear(text: str, mishear_map: dict) -> str:
+    """แทนที่คำที่มักได้ยินเพี้ยนแบบ word-boundary (ไม่ไปโดนคำอื่น)"""
+    if not text or not mishear_map:
+        return text or ""
+    pat = re.compile(r"\b(" + "|".join(map(re.escape, mishear_map.keys())) + r")\b", re.IGNORECASE)
+    def repl(m):
+        return mishear_map.get(m.group(0).lower(), m.group(0))
+    return pat.sub(repl, text)
+
+def preprocess_text(raw: str, mishear_map: dict = None) -> str:
+    """ขั้นตอนกลางใช้ได้ทั้ง chat/voice: unidecode → mishear → lower → trim spaces"""
+    t = (raw or "").strip()
+    t = unidecode(t)
+    if mishear_map:
+        t = apply_mishear(t, mishear_map)
+    t = t.lower()
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
 
 # -------- Loaders --------
 def load_kriol_lexicon(path: str) -> pd.DataFrame:
@@ -191,3 +232,18 @@ def score_diseases(symptoms: list[str], sym_df: pd.DataFrame) -> pd.DataFrame:
     scores = scores.rename(columns={"weight": "score"})
     scores = scores.sort_values("score", ascending=False).reset_index(drop=True)
     return scores
+
+def to_wav_16k_mono(src_path: str, out_dir: str = "uploads") -> str:
+    """
+    Convert any input audio (e.g., webm/m4a/mp3) to 16kHz mono WAV.
+    Requires ffmpeg in PATH.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+    dst = os.path.join(out_dir, f"{uuid.uuid4().hex}.wav")
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", src_path, "-ac", "1", "-ar", "16000", "-vn", dst],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return dst
