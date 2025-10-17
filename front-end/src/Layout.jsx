@@ -63,11 +63,12 @@ export default function Layout() {
         onSelect={(id) => setCurrentId(id)}
       />
       <main className="app-main">
-        {/* ⬇️ ตรงนี้แหละ: ส่ง context ไปให้ Chatbot ใช้ useOutletContext() รับค่า */}
         <Outlet
+          key={currentId}  // ✅ บังคับ remount เมื่อสลับห้อง/กด New
           context={{
             externalMessages: current.messages,
             onExternalMessagesChange: updateCurrentMessages,
+            currentChatId: currentId,    // ✅ ส่ง id ไปให้ chat.js รู้ว่ามีการสลับห้อง
           }}
         />
       </main>

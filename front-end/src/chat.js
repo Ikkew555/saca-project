@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import "./chat.css";
 import fever from "./assets/symptom/fever.png";
@@ -13,12 +13,23 @@ import micIcon from "./assets/icons/microphone-white-shape.png";
 import stopIcon from "./assets/icons/microphone-white-shape.png";
 
 function Chatbot() {
-  const { externalMessages = [], onExternalMessagesChange = () => {} } =
-    useOutletContext();
+  const {
+    externalMessages = [],
+    onExternalMessagesChange = () => {},
+    currentChatId,     // ✅ รับ id ห้องแชทปัจจุบัน
+  } = useOutletContext();
+
+  const getGreeting = (lang) =>
+  lang === "kriol"
+    ? "👋 Helo! Mi SACA. Yu save tokbaut yu sik o tap wan pichu we luk semsem long yu sik blo stat."
+    : "👋 Hi there! I’m your Smart Clinical Assistant. You can describe your symptoms below or tap an image that looks similar to your symptom to get started.";
+
 
   const [text, setText] = useState("");
   // เริ่มต้นเป็น [] ก่อน แล้วค่อยซิงก์ตาม context ภายหลัง
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() =>
+    Array.isArray(externalMessages) ? externalMessages : []
+  );
   // const [text, setText] = useState("");
   // const [chat, setChat] = useState([]);
   // const [messages, setMessages] = useState(externalMessages);
@@ -30,11 +41,23 @@ function Chatbot() {
   // const { externalMessages = [], onExternalMessagesChange = () => {} } = useOutletContext() || {};
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
+  // const greetedOnce = useRef(false);
 
-  // เมื่อ context เปลี่ยน (เช่นสลับห้องแชท) ให้ซิงก์ข้อความ
-  useEffect(() => {
-    setMessages(Array.isArray(externalMessages) ? externalMessages : []);
-  }, [externalMessages]);
+
+  // helper: อัปเดตทั้ง state ภายใน + แจ้ง Layout ให้บันทึกเป็นประวัติ
+  const pushAndSync = useCallback((next) => {
+    setMessages(next);
+    onExternalMessagesChange(next);
+  }, [onExternalMessagesChange]);
+
+  const appendAndSync = useCallback((...items) => {
+    setMessages((prev) => {
+      const next = [...prev, ...items];
+      onExternalMessagesChange(next);
+      return next;
+    });
+  }, [onExternalMessagesChange]);
+
 
   // 🌐 Language setup
   const [language, setLanguage] = useState(
@@ -43,31 +66,30 @@ function Chatbot() {
   const t = translations[language] || translations.en;
 
   // 👋 Greeting message on load
+  // ✅ ยิง greeting ทุกครั้งเมื่อเปิด "ห้องใหม่" (id เปลี่ยน) และห้องนั้นยังว่าง
   useEffect(() => {
-    if ((messages?.length || 0) === 0) {
-      pushAndSync([
-        {
-          sender: "bot",
-          text:
-            language === "kriol"
-              ? "👋 Helo! Mi SACA. Yu save tokbaut yu sik o tap wan pichu we luk semsem long yu sik blo stat."
-              : "👋 Hi there! I’m your Smart Clinical Assistant. You can describe your symptoms below or tap an image that looks similar to your symptom to get started.",
-        },
-      ]);
+    const isEmptyRoom = (externalMessages?.length ?? 0) === 0;
+    if (isEmptyRoom) {
+      const greet = { sender: "bot", text: getGreeting(language), meta: { greeting: true } };
+      pushAndSync([greet]);
+    } else {
+      setMessages(externalMessages);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language]);
+  }, [currentChatId, language, externalMessages, pushAndSync]);
 
-// helper: อัปเดตทั้ง state ภายใน + แจ้ง Layout ให้บันทึกเป็นประวัติ
-  const pushAndSync = (next) => {
-    setMessages(next);
-    onExternalMessagesChange(next);
-  };
-
-  // เมื่อเปลี่ยน session จาก Sidebar ให้โหลดข้อความชุดนั้น
   useEffect(() => {
-    setMessages(externalMessages || []);
-  }, [externalMessages]);
+    const emptyRoom = messages.length === 0;
+    const onlyGreeting =
+      messages.length === 1 &&
+      messages[0].sender === "bot" &&
+      messages[0].meta?.greeting;
+
+    // ถ้าห้องยังว่าง หรือมีแต่ greeting อยู่ → อัปเดตข้อความให้ตรงภาษา
+    if (emptyRoom || onlyGreeting) {
+      pushAndSync([{ sender: "bot", text: getGreeting(language), meta: { greeting: true } }]);
+    }
+    // ไม่ใส่ messages ใน dependency เพื่อกันลูป
+  }, [language, currentChatId, pushAndSync]);
 
   // Auto-scroll
   useEffect(() => {
@@ -91,17 +113,9 @@ function Chatbot() {
 
     // If clicked image
     if (imageFile) {
-      // setChat((prev) => [
-      //   ...prev,
-      //   { sender: "user", text: userInput, type: "image", file: imageFile },
-      // ]);
-      pushAndSync([
-        ...messages,
-        { sender: "user", text: userInput, type: "image", file: imageFile },
-      ]);
+      appendAndSync({ sender: "user", text: userInput, type: "image", file: imageFile });
     } else {
-      // setChat((prev) => [...prev, { sender: "user", text: userInput }]);
-      pushAndSync([...messages, { sender: "user", text: userInput }]);
+      appendAndSync({ sender: "user", text: userInput });
     }
 
     setText("");
@@ -149,21 +163,7 @@ function Chatbot() {
 
       setTimeout(() => {
         setIsTyping(false);
-        // const botMsg = { sender: "bot", text: "" };
-        // setChat((prev) => [...prev, botMsg]);
-        const botMsg = { sender: "bot", text: "" };
-        pushAndSync([...messages, { sender: "user", text: userInput }, botMsg]);
-
-        // let i = 0;
-        // const interval = setInterval(() => {
-        //   i++;
-        //   setChat((prev) => {
-        //     const updated = [...prev];
-        //     updated[updated.length - 1].text = fullHTML.slice(0, i);
-        //     return updated;
-        //   });
-        //   if (i >= fullHTML.length) clearInterval(interval);
-        // }, 20);
+        appendAndSync({ sender: "bot", text: "" });
 
         // typing effect: อัปเดตบับเบิลล่าสุดทีละตัวอักษรและซิงก์กับ Layout
         let i = 0;
@@ -206,27 +206,11 @@ function Chatbot() {
         formData.append("file", blob, "voice.webm");
 
         // 👤 Show user message in chat
-        // setChat((prev) => [
-        //   ...prev,
-        //   { sender: "user", text: "🎤 Voice message sent." },
-        // ]);
-        pushAndSync([
-          ...messages,
-          { sender: "user", text: "🎤 Voice message sent." },
-        ]);
+        appendAndSync({ sender: "user", text: "🎤 Voice message sent." });
 
         // 🕐 Show analyzing loader
-        // setIsTyping(true);
-        // setChat((prev) => [
-        //   ...prev,
-        //   { sender: "bot", text: "🎧 Analyzing your voice input..." },
-        // ]);
         setIsTyping(true);
-        pushAndSync([
-          ...messages,
-          { sender: "user", text: "🎤 Voice message sent." },
-          { sender: "bot", text: "🎧 Analyzing your voice input..." },
-        ]);
+        appendAndSync({ sender: "bot", text: "🎧 Analyzing your voice input..." });
 
         try {
           const res = await fetch("/api/voice", {
