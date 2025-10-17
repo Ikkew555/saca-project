@@ -5,20 +5,26 @@ export default function Sidebar({ sessions = [], currentId, onNew, onSelect }) {
     <aside className="sidebar">
       <div className="sidebar-head">
         <h3>💬 Chats</h3>
-        <button className="btn-new" onClick={onNew}>+ New</button>
+        <button className="btn-new" onClick={onNew}>
+          + New
+        </button>
       </div>
-      <ul className="session-list">
-        {sessions.map(s => (
-          <li
-            key={s.id}
-            className={`session-item ${s.id === currentId ? "active" : ""}`}
-            onClick={() => onSelect(s.id)}
-            title={s.title}
-          >
-            {s.title || "New chat"}
-          </li>
-        ))}
-      </ul>
+      {sessions.length == null ? (
+        <ul className="session-list">
+          {sessions.map((s) => (
+            <li
+              key={s.id}
+              className={`session-item ${s.id === currentId ? "active" : ""}`}
+              onClick={() => onSelect(s.id)}
+              title={s.title}
+            >
+              {s.title || "New chat"}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="session-list-empty">No chat history available</p>
+      )}
     </aside>
   );
 }
