@@ -9,7 +9,8 @@ export default function Sidebar({ sessions = [], currentId, onNew, onSelect }) {
           + New
         </button>
       </div>
-      {sessions.length == null ? (
+
+      {sessions.length > 0 ? ( // ✅ Correct condition
         <ul className="session-list">
           {sessions.map((s) => (
             <li
