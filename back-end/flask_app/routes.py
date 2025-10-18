@@ -1,10 +1,11 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app.cli_match import run_cli_match  # main logic for text
 from app.kriol_stt_predict import transcribe  # voice-to-text
 from app.utils import preprocess_text, MISHEAR_MAP
 from werkzeug.utils import secure_filename
 from app.utils import to_wav_16k_mono
 import os
+from app.api_chat import chat as chat_handler, sessions
 
 # ---------------------------------------------------------------------
 # Blueprint setup
@@ -102,41 +103,55 @@ def match_symptom():
 @routes_blueprint.route("/api/voice", methods=["POST"])
 def handle_voice():
     """
-    Receive voice file from React, convert to text, run matcher,
-    and return results with human-readable response.
+    Convert voice input to text, then send it through /api/chat logic.
+    Ensures the exact same conversation flow, including follow-up questions.
     """
     try:
         file = request.files.get("file")
+        user_id = request.form.get("user", "frontend-user")
+        lang = request.form.get("lang", "english")
+
         if not file:
             return jsonify({"error": "No voice file received"}), 400
 
         filename = secure_filename(file.filename)
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         file.save(file_path)
+
+        # Step 1: Convert to WAV (if supported)
         try:
-                wav_path = to_wav_16k_mono(file_path)   # ✅ ถ้ามีใน utils.py
-                stt_input_path = wav_path
+            wav_path = to_wav_16k_mono(file_path)
         except Exception:
-                stt_input_path = file_path  # ถ้า ffmpeg ไม่มี ให้ใช้ไฟล์เดิมต่อไปก่อน
+            wav_path = file_path
 
-        text_from_audio_raw = transcribe(stt_input_path)
-        print(f"[INFO] Transcribed text (raw): {text_from_audio_raw}")
+        # Step 2: Transcribe to text
+        text_from_audio_raw = transcribe(wav_path)
+        text_clean = preprocess_text(text_from_audio_raw, MISHEAR_MAP)
 
-        # Convert voice → text
-        text_from_audio = preprocess_text(text_from_audio_raw, MISHEAR_MAP)
-        print(f"[INFO] Transcribed text (pre): {text_from_audio}")
+        print(f"[🎙️ Raw transcription]: {text_from_audio_raw}")
+        print(f"[🧹 Cleaned text]: {text_clean}")
 
-        # Run symptom-disease matching
-        result = run_cli_match(text_from_audio)
-        result["input_raw"] = text_from_audio_raw
-        result["input"] = text_from_audio
-        result["message"] = make_human_message(result)
+        # Step 3: Forward the cleaned text to /api/chat internally
+        from app.api_chat import chat as chat_handler
 
-        print("[INFO] Voice analysis complete.")
-        return jsonify(result)
+        with current_app.test_request_context(
+            "/api/chat",
+            method="POST",
+            json={"user": user_id, "text": text_clean, "lang": lang},
+        ):
+            response = chat_handler()
+            chat_data = response.get_json()
+
+        # Step 4: Include transcription info for frontend display
+        chat_data["transcribed_text"] = text_from_audio_raw
+        chat_data["processed_text"] = text_clean
+        chat_data["input_type"] = "voice"
+
+        print(f"✅ Voice processed and sent to /api/chat successfully.")
+        return jsonify(chat_data)
 
     except Exception as e:
-        print(f"[ERROR /api/voice] {e}")
+        print(f"[❌ ERROR /api/voice] {e}")
         return jsonify({"error": f"Voice processing failed: {str(e)}"}), 500
 
 

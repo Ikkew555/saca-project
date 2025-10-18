@@ -4,7 +4,7 @@ import "./chat.css";
 import fever from "./assets/symptom/fever.png";
 import cough from "./assets/symptom/cough.png";
 import backPain from "./assets/symptom/backPain.png";
-import drizziness from "./assets/symptom/drizziness.png";
+import dizziness from "./assets/symptom/dizziness.png";
 import fatigue from "./assets/symptom/fatigue.png";
 import chestPain from "./assets/symptom/chestPain.png";
 import { translations } from "./translations.js";
@@ -16,48 +16,45 @@ function Chatbot() {
   const {
     externalMessages = [],
     onExternalMessagesChange = () => {},
-    currentChatId,     // ✅ รับ id ห้องแชทปัจจุบัน
+    currentChatId,
   } = useOutletContext();
 
   const getGreeting = (lang) =>
-  lang === "kriol"
-    ? "👋 Helo! Mi SACA. Yu save tokbaut yu sik o tap wan pichu we luk semsem long yu sik blo stat."
-    : "👋 Hi there! I’m your Smart Clinical Assistant. You can describe your symptoms below or tap an image that looks similar to your symptom to get started.";
-
+    lang === "kriol"
+      ? "👋 Helo! Mi SACA. Yu save tokbaut yu sik o tap wan pichu we luk semsem long yu sik blo stat."
+      : "👋 Hi there! I’m your Smart Clinical Assistant. You can describe your symptoms below or tap an image that looks similar to your symptom to get started.";
 
   const [text, setText] = useState("");
-  // เริ่มต้นเป็น [] ก่อน แล้วค่อยซิงก์ตาม context ภายหลัง
   const [messages, setMessages] = useState(() =>
     Array.isArray(externalMessages) ? externalMessages : []
   );
-  // const [text, setText] = useState("");
-  // const [chat, setChat] = useState([]);
-  // const [messages, setMessages] = useState(externalMessages);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isFinalLoading, setIsFinalLoading] = useState(false);
   const [showLangPopup, setShowLangPopup] = useState(true);
-  // const { externalMessages = [], onExternalMessagesChange = () => {} } = useOutletContext() || {};
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
-  // const greetedOnce = useRef(false);
 
-
-  // helper: อัปเดตทั้ง state ภายใน + แจ้ง Layout ให้บันทึกเป็นประวัติ
-  const pushAndSync = useCallback((next) => {
-    setMessages(next);
-    onExternalMessagesChange(next);
-  }, [onExternalMessagesChange]);
-
-  const appendAndSync = useCallback((...items) => {
-    setMessages((prev) => {
-      const next = [...prev, ...items];
+  // helper: sync messages with parent context
+  const pushAndSync = useCallback(
+    (next) => {
+      setMessages(next);
       onExternalMessagesChange(next);
-      return next;
-    });
-  }, [onExternalMessagesChange]);
+    },
+    [onExternalMessagesChange]
+  );
 
+  const appendAndSync = useCallback(
+    (...items) => {
+      setMessages((prev) => {
+        const next = [...prev, ...items];
+        onExternalMessagesChange(next);
+        return next;
+      });
+    },
+    [onExternalMessagesChange]
+  );
 
   // 🌐 Language setup
   const [language, setLanguage] = useState(
@@ -65,31 +62,20 @@ function Chatbot() {
   );
   const t = translations[language] || translations.en;
 
-  // 👋 Greeting message on load
-  // ✅ ยิง greeting ทุกครั้งเมื่อเปิด "ห้องใหม่" (id เปลี่ยน) และห้องนั้นยังว่าง
+  // 👋 Greeting message
   useEffect(() => {
     const isEmptyRoom = (externalMessages?.length ?? 0) === 0;
     if (isEmptyRoom) {
-      const greet = { sender: "bot", text: getGreeting(language), meta: { greeting: true } };
+      const greet = {
+        sender: "bot",
+        text: getGreeting(language),
+        meta: { greeting: true },
+      };
       pushAndSync([greet]);
     } else {
       setMessages(externalMessages);
     }
   }, [currentChatId, language, externalMessages, pushAndSync]);
-
-  useEffect(() => {
-    const emptyRoom = messages.length === 0;
-    const onlyGreeting =
-      messages.length === 1 &&
-      messages[0].sender === "bot" &&
-      messages[0].meta?.greeting;
-
-    // ถ้าห้องยังว่าง หรือมีแต่ greeting อยู่ → อัปเดตข้อความให้ตรงภาษา
-    if (emptyRoom || onlyGreeting) {
-      pushAndSync([{ sender: "bot", text: getGreeting(language), meta: { greeting: true } }]);
-    }
-    // ไม่ใส่ messages ใน dependency เพื่อกันลูป
-  }, [language, currentChatId, pushAndSync]);
 
   // Auto-scroll
   useEffect(() => {
@@ -101,19 +87,23 @@ function Chatbot() {
     { name: "fever", file: fever },
     { name: "cough", file: cough },
     { name: "fatigue", file: fatigue },
-    { name: "dizziness", file: drizziness },
+    { name: "dizziness", file: dizziness },
     { name: "chest pain", file: chestPain },
     { name: "back pain", file: backPain },
   ];
 
-  // ✉️ Send message to backend
+  // ✉️ Send text message to backend
   const handleSend = async (inputText, imageFile = null) => {
     const userInput = inputText || text;
     if (!userInput.trim()) return;
 
-    // If clicked image
     if (imageFile) {
-      appendAndSync({ sender: "user", text: userInput, type: "image", file: imageFile });
+      appendAndSync({
+        sender: "user",
+        text: userInput,
+        type: "image",
+        file: imageFile,
+      });
     } else {
       appendAndSync({ sender: "user", text: userInput });
     }
@@ -131,14 +121,11 @@ function Chatbot() {
           lang: language === "en" ? "english" : "kriol",
         }),
       });
-
       const data = await res.json();
 
-      // 🧠 If backend done
       if (data.done) {
         setIsTyping(false);
         setIsFinalLoading(true);
-
         setTimeout(() => {
           setIsFinalLoading(false);
           navigate("/result", {
@@ -153,19 +140,11 @@ function Chatbot() {
         return;
       }
 
-      // 💬 Normal response
+      // normal reply with typing effect
       let fullHTML = data.message;
-      if (data.predictions?.length) {
-        fullHTML += `<br/><br/><b>Possible Diseases:</b><br/>${data.predictions
-          .map((p) => `${p.disease} — score: ${p.score}`)
-          .join("<br/>")}`;
-      }
-
       setTimeout(() => {
         setIsTyping(false);
         appendAndSync({ sender: "bot", text: "" });
-
-        // typing effect: อัปเดตบับเบิลล่าสุดทีละตัวอักษรและซิงก์กับ Layout
         let i = 0;
         const interval = setInterval(() => {
           i++;
@@ -175,7 +154,7 @@ function Chatbot() {
               ...updated[updated.length - 1],
               text: fullHTML.slice(0, i),
             };
-            onExternalMessagesChange(updated); // sync ไป Layout ทุก tick
+            onExternalMessagesChange(updated);
             return updated;
           });
           if (i >= fullHTML.length) clearInterval(interval);
@@ -187,30 +166,30 @@ function Chatbot() {
     }
   };
 
-  // 🎙️ Start Recording (with popup)
+  // 🎙️ Start voice recording
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
       const chunks = [];
 
-      // 🧩 Collect voice data
       recorder.ondataavailable = (e) => chunks.push(e.data);
 
-      // 🎯 Handle when user stops recording
       recorder.onstop = async () => {
-        setRecording(false); // close popup
+        setRecording(false);
 
         const blob = new Blob(chunks, { type: "audio/webm" });
         const formData = new FormData();
         formData.append("file", blob, "voice.webm");
+        formData.append("user", "frontend-user");
+        formData.append("lang", language === "en" ? "english" : "kriol");
 
-        // 👤 Show user message in chat
         appendAndSync({ sender: "user", text: "🎤 Voice message sent." });
-
-        // 🕐 Show analyzing loader
         setIsTyping(true);
-        appendAndSync({ sender: "bot", text: "🎧 Analyzing your voice input..." });
+        appendAndSync({
+          sender: "bot",
+          text: "🎧 Analyzing your voice input...",
+        });
 
         try {
           const res = await fetch("/api/voice", {
@@ -219,39 +198,53 @@ function Chatbot() {
           });
           const data = await res.json();
 
-          setTimeout(() => {
+          // show what the bot heard
+          if (data.transcribed_text) {
+            appendAndSync({
+              sender: "user",
+              text: `${data.transcribed_text}`,
+              // text: `🗣 You said: <i>${data.transcribed_text}</i>`,
+            });
+          }
+
+          if (data.done) {
             setIsTyping(false);
+            setIsFinalLoading(true);
+            setTimeout(() => {
+              setIsFinalLoading(false);
+              navigate("/result", {
+                state: {
+                  symptoms: data.symptoms || [],
+                  predictions: data.predictions || [],
+                  lang: data.lang || "english",
+                  symptom_details: data.symptom_details,
+                },
+              });
+            }, 2000);
+            return;
+          }
 
-            const botMsg = {
-              sender: "bot",
-              text:
-                data.message ||
-                (language === "kriol"
-                  ? "Mi bin lisin long yu. Mi save faindim infomesen."
-                  : "I’ve listened to your voice and analyzed the information."),
-            };
-
-            // setChat((prev) => [...prev, botMsg]);
-            pushAndSync([
-              ...messages,
-              { sender: "user", text: "🎤 Voice message sent." },
-              botMsg,
-            ]);
-          }, 1500);
+          // show bot message with typing effect
+          setIsTyping(false);
+          appendAndSync({ sender: "bot", text: "" });
+          const fullText = data.message || "No response from bot.";
+          let i = 0;
+          const interval = setInterval(() => {
+            i++;
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                text: fullText.slice(0, i),
+              };
+              onExternalMessagesChange(updated);
+              return updated;
+            });
+            if (i >= fullText.length) clearInterval(interval);
+          }, 20);
         } catch (err) {
           console.error("Voice processing error:", err);
-          // setChat((prev) => [
-          //   ...prev,
-          //   {
-          //     sender: "bot",
-          //     text:
-          //       language === "kriol"
-          //         ? "Sori, mi no bin save lisin propali. Trai gen."
-          //         : "Sorry, I couldn’t process your voice. Please try again.",
-          //   },
-          // ]);
           pushAndSync([
-            ...messages,
             {
               sender: "bot",
               text:
@@ -264,25 +257,22 @@ function Chatbot() {
         }
       };
 
-      // 🚀 Begin recording
       recorder.start();
       setMediaRecorder(recorder);
-      setRecording(true); // show popup
+      setRecording(true);
     } catch (err) {
       console.error("Microphone error:", err);
       alert("Microphone not available or permission denied.");
     }
   };
 
-  // ⏹ Stop Recording (triggered from popup)
   const stopRecording = () => {
     if (mediaRecorder) {
       mediaRecorder.stop();
-      setRecording(false); // close popup
+      setRecording(false);
     }
   };
 
-  // 🌐 Language selection popup
   const handleLangSelect = (langCode) => {
     setLanguage(langCode);
     localStorage.setItem("lang", langCode);
@@ -291,7 +281,6 @@ function Chatbot() {
 
   return (
     <div className="chatbot-container">
-      {/* 💬 Header */}
       <div className="chatbot-header">
         <h2 className="chatbot-title">{t.assistantTitle}</h2>
         <button onClick={() => setShowLangPopup(true)} className="lang-btn">
@@ -299,7 +288,6 @@ function Chatbot() {
         </button>
       </div>
 
-      {/* 🌍 Language Popup */}
       {showLangPopup && (
         <div className="popup-overlay" onClick={() => setShowLangPopup(false)}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
@@ -328,7 +316,6 @@ function Chatbot() {
         </div>
       )}
 
-      {/* 💬 Chat Area */}
       <div className="chat-box">
         {messages.length <= 1 && (
           <div className="symptom-gallery">
@@ -336,7 +323,7 @@ function Chatbot() {
               {symptomImages.map((sym, i) => (
                 <div
                   key={i}
-                  className="symptom-card"
+                  className="symptom-card-images"
                   onClick={() => handleSend(sym.name, sym.file)}
                 >
                   <img src={sym.file} alt={sym.name} className="symptom-img" />
@@ -388,7 +375,6 @@ function Chatbot() {
         <div ref={chatEndRef} />
       </div>
 
-      {/* 🗣️ Input Section */}
       <div className="input-section">
         <input
           type="text"
@@ -405,12 +391,11 @@ function Chatbot() {
         <button onClick={() => handleSend()} className="btn-send">
           {language === "kriol" ? "Sendim" : "Send"}
         </button>
-        {/* 🎙️ Mic Button */}
         <button onClick={startRecording} className="btn-mic">
           <img src={micIcon} alt="Start recording" className="mic-img" />
         </button>
       </div>
-      {/* 🎧 Voice Recording Popup */}
+
       {recording && (
         <div className="popup-overlay">
           <div className="popup-content">
