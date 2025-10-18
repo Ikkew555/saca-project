@@ -1,28 +1,21 @@
-/* ======= GLOBAL RESET ======= */
 * {
   background-color: white;
-  box-sizing: border-box;
 }
 
 html,
 body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* keep everything inside viewport */
+  min-width: 900px; /* 👈 Set your minimum width */
+  overflow-x: auto; /* Allow horizontal scroll if screen smaller */
 }
 
-/* ======= MAIN CONTAINER ======= */
+/* --- Container --- */
 .chatbot-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh; /* fill screen */
+  padding: 20px;
   max-width: 1000px;
   margin: 0 auto;
   color: #222;
   font-family: "Inter", sans-serif;
-  overflow: hidden; /* prevent page scroll */
-  padding: 20px; /* horizontal padding only */
+  height: 70%;
 }
 
 .chatbot-title {
@@ -31,43 +24,16 @@ body {
   background-color: transparent;
 }
 
-/* ======= HEADER ======= */
-.chatbot-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f8fafc;
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0;
-}
-
-/* ======= CHAT AREA ======= */
+/* --- Chat box --- */
 .chat-box {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
   border: 1px solid #ccc;
   border-radius: 12px;
   padding: 15px;
+  height: 100%;
+  overflow-y: auto;
   background: transparent;
+  margin-bottom: 15px;
   width: 100%;
-  scroll-behavior: smooth;
-  margin-bottom: 0; /* remove bottom space */
-}
-
-/* Scrollbar styling (optional) */
-.chat-box::-webkit-scrollbar {
-  width: 8px;
-}
-.chat-box::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 100, 100, 0.3);
-  border-radius: 4px;
-}
-.chat-box::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 100, 100, 0.5);
 }
 
 /* ======= SYMPTOM GALLERY CENTERED ======= */
@@ -79,7 +45,7 @@ body {
   width: 100%;
   background: transparent;
   text-align: center;
-  margin: 16px auto;
+  margin: 0 auto;
 }
 
 /* ======= GRID CENTER ALIGN ======= */
@@ -96,7 +62,7 @@ body {
 /* Responsive: 2 columns for tablet, centered */
 @media (max-width: 1024px) {
   .gallery-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
 }
@@ -104,9 +70,13 @@ body {
 /* Responsive: 2 columns for small mobile screens */
 @media (max-width: 768px) {
   .gallery-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
   }
+}
+
+.gallery-text {
+  margin-bottom: 16px;
 }
 
 /* ======= SYMPTOM CARD IMAGES — EDGE TO EDGE ======= */
@@ -161,7 +131,32 @@ body {
     height: 120px;
   }
 }
-/* ======= CHAT MESSAGES ======= */
+
+.symptom-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 16px;
+}
+
+.symptom-card:hover {
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  /* background-color: #0084ff; */
+}
+
+/* Only image, no text */
+.symptom-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* fills box fully */
+  display: block;
+  cursor: pointer;
+}
+
+/* --- Chat Messages --- */
 .chat-message {
   margin-bottom: 12px;
 }
@@ -182,7 +177,6 @@ body {
   border-radius: 16px;
   max-width: 80%;
   white-space: pre-line;
-  animation: fadeInText 0.2s ease-in;
 }
 
 .chat-message.user .message-bubble {
@@ -190,7 +184,83 @@ body {
   color: #fff;
 }
 
-/* ======= TYPING INDICATOR ======= */
+/* --- Typing Indicator --- */
+.typing-indicator {
+  text-align: left;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* --- Input Section --- */
+.input-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  /* position: fixed; */
+  bottom: 20px;
+  left: 50%;
+  /* transform: translateX(-50%); */
+  width: 100%;
+  max-width: 960px;
+  gap: 10px;
+  padding: 10px 0;
+  border-radius: 10px;
+}
+
+/* Chat input box */
+.chat-input {
+  flex: 1;
+  padding: 16px;
+  border: solid 1px #555;
+  border-radius: 24px;
+  height: 50px; /* fixed height for alignment */
+  font-size: 16px;
+}
+
+/* Send & Mic buttons */
+.btn-send,
+.btn-mic {
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Send button */
+.btn-send {
+  background-color: #0084ff;
+  padding: 10px 18px;
+  border-radius: 24px;
+  height: 50px; /* same height as input */
+  color: #fff;
+}
+
+/* Mic button (circle shape) */
+.mic-img {
+  background-color: #000;
+  color: #fff;
+  width: 50px;
+  height: 50px; /* match input height */
+  border-radius: 50%; /* make it perfectly circular */
+  display: flex;
+  align-items: center; /* center mic icon vertically */
+  justify-content: center; /* center horizontally */
+  padding: 14px;
+}
+
+.btn-send:hover,
+.mic-img:hover {
+  background-color: #e5e5e5;
+  color: #000;
+}
+
+.btn-mic.recording {
+  background: red;
+  color: white;
+  border-radius: 50%; /* make it perfectly circular */
+}
+
+/* --- Typing Animation --- */
 .typing-indicator {
   display: flex;
   align-items: center;
@@ -215,70 +285,66 @@ body {
   animation-delay: 0.4s;
 }
 
-/* ======= INPUT SECTION ======= */
-.input-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 960px;
-  gap: 10px;
-  padding: 20px 0; /* small bottom padding */
-  flex-shrink: 0; /* stays fixed */
-  background: white; /* seamless with body */
-  border-top: 1px solid #eee; /* subtle separation line */
+@media (max-width: 1300px) {
+  .gallery-grid {
+    display: grid;
+    gap: 24px;
+    margin-top: 10px;
+    margin: auto;
+    margin-bottom: 24px;
+    width: 100%;
+    height: 100%;
+  }
+  .symptom-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 16px;
+  }
+
+  .symptom-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: fit; /* fills box fully */
+    display: block;
+    cursor: pointer;
+  }
 }
 
-.chat-input {
-  flex: 1;
-  padding: 16px;
-  border: solid 1px #555;
-  border-radius: 24px;
-  height: 50px;
-  font-size: 16px;
+@media (max-width: 1024px) {
+  .gallery-grid {
+    display: grid;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 10px;
+    margin: auto;
+    margin-bottom: 24px;
+    height: 100%;
+    width: 100%;
+  }
+  .symptom-card {
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 16px;
+    height: 100%;
+  }
+
+  .symptom-card img {
+    width: 100%;
+    height: 100%;
+    min-width: 100px;
+    object-fit: cover; /* fills box fully */
+    display: block;
+    cursor: pointer;
+  }
 }
 
-/* Send & Mic buttons */
-.btn-send,
-.btn-mic {
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.btn-send {
-  background-color: #0084ff;
-  padding: 10px 18px;
-  border-radius: 24px;
-  height: 50px;
-  color: #fff;
-}
-
-.mic-img {
-  background-color: #000;
-  color: #fff;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px;
-}
-
-.btn-send:hover,
-.mic-img:hover {
-  background-color: #e5e5e5;
-  color: #000;
-}
-
-.btn-mic.recording {
-  background: red;
-  color: white;
-  border-radius: 50%;
-}
-
-/* ======= ANIMATIONS ======= */
 @keyframes typingBounce {
   0%,
   80%,
@@ -292,6 +358,17 @@ body {
   }
 }
 
+.message-bubble {
+  display: inline-block;
+  background: #e5e5ea;
+  color: #000;
+  padding: 10px 14px;
+  border-radius: 16px;
+  max-width: 80%;
+  white-space: pre-line;
+  animation: fadeInText 0.2s ease-in;
+}
+
 @keyframes fadeInText {
   from {
     opacity: 0.3;
@@ -301,7 +378,18 @@ body {
   }
 }
 
-/* ======= RECORDING INDICATOR ======= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🔴 Recording Indicator */
 .recording-status {
   color: red;
   font-weight: 500;
@@ -341,7 +429,6 @@ body {
   }
 }
 
-/* ======= LOADING OVERLAY ======= */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -357,7 +444,15 @@ body {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* ======= IMAGES ======= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .image-bubble {
   background: transparent !important;
   padding: 0 !important;
@@ -373,7 +468,17 @@ body {
   border: 2px solid #f1f5f9;
 }
 
-/* ======= LANGUAGE BUTTON ======= */
+.chatbot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
 .lang-btn {
   background: #e5e7eb;
   border: none;
@@ -384,14 +489,16 @@ body {
   transition: all 0.2s ease;
 }
 
-/* ======= POPUP STYLES ======= */
+/* ======= GLOBAL POPUP STYLES ======= */
+
+/* Dark background overlay for all popups */
 .popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7); /* darker gray overlay */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -400,6 +507,7 @@ body {
   animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Popup container */
 .popup-content {
   background: #ffffff;
   border-radius: 16px;
@@ -411,6 +519,7 @@ body {
   animation: popupFadeIn 0.3s ease;
 }
 
+/* Popup title & text */
 .popup-content h3 {
   font-size: 1.3rem;
   margin-bottom: 0.5rem;
@@ -425,6 +534,7 @@ body {
   background: none;
 }
 
+/* Option buttons (for language selection) */
 .popup-options {
   display: flex;
   flex-direction: column;
@@ -450,6 +560,7 @@ body {
   color: #333;
 }
 
+/* Recording visualizer */
 .recording-visualizer {
   display: flex;
   justify-content: center;
@@ -457,6 +568,22 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.recording-dot {
+  width: 12px;
+  height: 12px;
+  background-color: red;
+  border-radius: 50%;
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.recording-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.recording-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Stop button */
 .btn-stop-record {
   background-color: #ef4444;
   color: white;
@@ -491,5 +618,17 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.3;
   }
 }
