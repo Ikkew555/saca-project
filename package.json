@@ -1,6 +1,13 @@
 {
-  "dependencies": {
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^7.9.3"
+  "name": "saca-project",
+  "private": true,
+  "scripts": {
+    "frontend:install": "npm --prefix front-end install",
+    "frontend:start": "npm --prefix front-end start",
+    "server": "cd back-end && py run.py",
+    "dev": "concurrently \"npm run server\" \"npm run frontend:start\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
   }
 }

@@ -33,12 +33,6 @@ instance/
 *.sqlite3
 *.db
 
-# Runtime uploads/audio (keep folder with a placeholder)
-back-end/uploads/
-back-end/**/*.wav
-back-end/**/*.webm
-voice.webm
-
 # Env files (commit only templates)
 .env
 .env.*
