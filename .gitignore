@@ -1,28 +1,67 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules/
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# Node/React
+node_modules/
+**/.eslintcache
+**/.cache/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.tsbuildinfo
 
-# python
+# Builds & coverage
+build/
+dist/
+coverage/
+
+# Python/Flask
+.venv/
 venv/
+ENV/
+env/
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.coverage
+coverage.xml
+htmlcov/
+instance/
+*.sqlite3
+*.db
+
+# Runtime uploads/audio (keep folder with a placeholder)
+back-end/uploads/
+back-end/**/*.wav
+back-end/**/*.webm
+voice.webm
+
+# Env files (commit only templates)
+.env
+.env.*
+/front-end/.env
+/front-end/.env.*
+/back-end/.env
+/back-end/.env.*
+!/.env.example
+!/front-end/.env.example
+!/back-end/.env.example
+
+# Editors/OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Misc temp
+*.bak
+*.tmp
+*.orig
+
+# Safety
+.git-credentials
