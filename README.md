@@ -37,23 +37,29 @@ SACA-PROJECT/
 
 ## 🛠️ How to Run the Project
 
-### 🔹 Frontend (React)
+# SACA
+
+## Setup
+Install Anaconda [here](https://www.anaconda.com/products/distribution)
 
 ```bash
-cd frontend
-npm install
-npm start
-Visit: http://localhost:3000
+# change directory
+cd saca-project
 ```
-
-### 🔹 Backend (Python)
 
 ```bash
-cd backend
-pip install -r requirements.txt
-python3 run.py
+# setup conda environment
+conda env create -f environment.yml
+conda activate saca
+```
+```bash
+# install pre-commit hooks
+pre-commit install
+pre-commit install --hook-type commit-msg
 ```
 
-```
-pip install pandas scikit-learn joblib (only for first-time)
+## Run Web-app
+```bash
+# run app
+py app.py
 ```
