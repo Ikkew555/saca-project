@@ -31,6 +31,9 @@ instance/
 *.sqlite3
 *.db
 
+back-end/uploads/*
+back-end/uploads/voice.webm
+
 # Env files (commit only templates)
 .env
 .env.*
