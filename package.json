@@ -4,7 +4,7 @@
   "scripts": {
     "frontend:install": "npm --prefix front-end install",
     "frontend:start": "npm --prefix front-end start",
-    "server": "cd back-end && py run.py",
+    "server": "cd back-end && python run.py",
     "dev": "concurrently \"npm run server\" \"npm run frontend:start\""
   },
   "devDependencies": {
