@@ -1,20 +1,35 @@
 kriol_phrase,symptom
-"sik la chest","chest pain"
-"bin cough","cough"
-"breath hard","shortness of breath"
-"thirsti","excessive thirst"
-"tiyad","fatigue"
-"pee plenti","frequent urination"
-"swel leg","leg swelling"
-"head hot","fever"
-"skin itchy","itchy skin"
-"sore la bak","back pain"
-"bel hot","stomach pain"
-"bel sore","stomach pain"
-"nose run","runny nose"
-"throat hot","sore throat"
-"head spin","dizziness"
-"no can sleep","insomnia"
-"body weak","weakness"
-"ear sore","ear pain"
-"eye red","eye infection"
+head hot,fever
+body hot,fever
+nose run,runny nose
+troat sore,sore throat
+breath short,shortness of breath
+breath hard,shortness of breath
+bin cough,cough
+cough dry,cough
+hed pain,headache
+bel sore,abdominal cramps
+bel hot,abdominal_cramps
+swel leg,leg swelling
+skin itchy,itchy skin
+eye red,eye redness
+eye sore,eye pain
+ear sore,ear pain
+pee hot,burning_urination
+feel spin,dizziness
+no can sleep,fatigue
+sik la chest,chest pain
+sweat plenti,sweating
+kol kol an shake,chills
+no laik kai kai,loss_of_appetite
+go toilet wet plenti,diarrhea
+spiu,vomiting
+bak sore,back pain
+joint sore,joint pain
+yu breath short taim,shortness_of_breath
+troat scratchi,sore throat
+nose block,runny nose
+hed spinin,dizziness
+leg bin swel,leg_swelling
+skin gat rash,rash
+eye bluri,blurry_vision

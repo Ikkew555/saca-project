@@ -1,0 +1,74 @@
+.sidebar {
+  width: 240px;
+  border-right: 1px solid #4f46e5;
+  padding: 12px;
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #4f46e5;
+}
+
+.sidebar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  background-color: transparent;
+  border: solid 1px #fff;
+  background-color: #e7eaf5;
+  padding: 12px;
+  border-radius: 8px;
+}
+.sidebar-head h3 {
+  margin: 0;
+  font-size: 16px;
+  background-color: transparent;
+  color: #333;
+}
+
+.btn-new {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #4f46e5;
+  color: #fff;
+  cursor: pointer;
+}
+
+.session-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.session-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  color: #fff;
+  background-color: transparent;
+  margin: 0;
+}
+
+.session-list-empty::before {
+  content: "💬";
+  display: flex;
+  font-size: 48px;
+  margin-bottom: 10px;
+  padding: 0 12px;
+}
+
+.session-item {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.session-item:hover {
+  background: #e7eaf5;
+}
+.session-item.active {
+  background: #cdd5ff;
+  font-weight: 600;
+}
