@@ -10,6 +10,8 @@ function ResultPage() {
     symptoms = [],
     predictions = [],
     symptom_details = [],
+    severity = null,
+    slots = {},
   } = location.state || {};
 
   // 🌐 Language setup
@@ -168,6 +170,25 @@ function ResultPage() {
       {/* 💊 Possible Conditions */}
       <div className="result-section">
         <h3>{langText.possibleConditions}</h3>
+        {/* Severity summary (if available) */}
+        {severity ? (
+          <div className="severity-panel">
+            <h4>{langText.severityTitle || "Severity"}</h4>
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+              <div>
+                <b>{(severity.label || "").toUpperCase()}</b>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 10, background: "#e5e7eb", borderRadius: 999, overflow: "hidden" }}>
+                  <div style={{ height: 10, width: `${Math.round((severity.probabilities?.severe||0)*100)}%`, background: "#dc2626" }} />
+                </div>
+                <small>
+                  {langText.severityNote || "Estimated severity probabilities shown."}
+                </small>
+              </div>
+            </div>
+          </div>
+        ) : null}
         {predictions.length > 0 ? (
           predictions.map((p, i) => {
             const confidence = Math.round(p.score * 100);

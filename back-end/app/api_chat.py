@@ -55,6 +55,152 @@ for df in [df_symptom, df_details, df_followup]:
 
 sessions = {}
 
+# -------------------------
+# Triage slot parsers & prompts (basic, bilingual)
+# -------------------------
+YES = {"yes", "y", "yeah", "yep", "true", "sure", "ok", "okay", "affirmative"}
+NO = {"no", "n", "nope", "nah", "false", "not really"}
+
+def _to_float(text: str):
+    try:
+        return float(re.search(r"-?\d+(?:\.\d+)?", str(text)).group(0))
+    except Exception:
+        return None
+
+def _parse_age(text: str):
+    m = re.search(r"(\d{1,3})", str(text))
+    return float(m.group(1)) if m else None
+
+def _parse_duration_days(text: str):
+    t = (text or "").lower().strip()
+    t = t.replace("about ", "").replace("around ", "")
+    if t in {"today","now"}:
+        return 0.0
+    if t in {"yesterday"}:
+        return 1.0
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(day|days|d)\b", t)
+    if m:
+        return float(m.group(1))
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(week|weeks|w)\b", t)
+    if m:
+        return float(m.group(1)) * 7.0
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(month|months|mo)\b", t)
+    if m:
+        return float(m.group(1)) * 30.0
+    m = re.search(r"(\d+(?:\.\d+)?)\s*(year|years|y)\b", t)
+    if m:
+        return float(m.group(1)) * 365.0
+    m = re.search(r"(\d+)", t)
+    return float(m.group(1)) if m else None
+
+def _parse_yesno(text: str):
+    t = (text or "").lower().strip()
+    if t in YES:
+        return True
+    if t in NO:
+        return False
+    return None
+
+def _parse_temp_c(text: str):
+    t = (text or "").lower()
+    if "skip" in t or "dont know" in t or "don't know" in t:
+        return None
+    m = re.search(r"(-?\d+(?:\.\d+)?)\s*°?\s*([cf])?\b", t)
+    if not m:
+        return None
+    val = float(m.group(1)); unit = (m.group(2) or "c").lower()
+    if unit == "f":
+        val = (val - 32.0) * 5.0 / 9.0
+    return val
+
+def _parse_hr(text: str):
+    t = (text or "").lower()
+    if "skip" in t:
+        return None
+    m = re.search(r"(\d{2,3})", t)
+    return float(m.group(1)) if m else None
+
+def _parse_spo2(text: str):
+    t = (text or "").lower()
+    if "skip" in t:
+        return None
+    m = re.search(r"(\d{2,3})\s*%?", t)
+    v = float(m.group(1)) if m else None
+    if v is not None and v > 100:
+        return None
+    return v
+
+def _parse_intensity(text: str):
+    t = (text or "").lower().strip()
+    if t in {"mild","light"}:
+        return "mild"
+    if t in {"moderate","medium","okay"}:
+        return "moderate"
+    if t in {"severe","bad","very bad","terrible"}:
+        return "severe"
+    m = re.search(r"(\d+(?:\.\d+)?)", t)
+    if m:
+        v = float(m.group(1))
+        if v <= 3:
+            return "mild"
+        if v <= 6:
+            return "moderate"
+        return "severe"
+    return None
+
+SLOT_ORDER = ["age", "duration_days", "redflags", "temp_c", "hr", "spo2", "intensity"]
+
+SLOT_PROMPTS = {
+    "age": {"english": "How old are you?", "kriol": "Haow old yu?"},
+    "duration_days": {"english": "How long have you had these symptoms (days)?", "kriol": "Yu bin gat displa sik hamas long? (deis)"},
+    "redflags": {"english": "Any danger signs like severe difficulty breathing, fainting, or severe bleeding? (yes/no)", "kriol": "Eni big problem olsem hard long breth, foldaot o lotfala bleeding? (yes/no)"},
+    "temp_c": {"english": "Do you know your temperature in °C or °F? If not, say 'skip'.", "kriol": "Yu save temperature o no? (°C o °F). If no, talem 'skip'"},
+    "hr": {"english": "Do you know your heart rate (beats per minute)? If not, say 'skip'.", "kriol": "Yu save heart rate? If no, talem 'skip'."},
+    "spo2": {"english": "Do you know your oxygen saturation (SpO2 %)? If not, say 'skip'.", "kriol": "Yu save SpO2? If no, talem 'skip'."},
+    "intensity": {"english": "How intense is it: mild, moderate or severe?", "kriol": "Hao strong em: mild, moderate o severe?"},
+}
+
+def ask_next_slot(slots: dict, lang: str = "english"):
+    for k in SLOT_ORDER:
+        if k not in slots:
+            return SLOT_PROMPTS.get(k, {}).get(lang, SLOT_PROMPTS.get(k, {}).get("english")), k
+    return None, None
+
+def compute_severity_fallback(symptoms: list, slots: dict):
+    # Simple heuristic combining redflags, temp, spo2, hr, intensity
+    mild = 1.0; moderate = 1.0; severe = 1.0
+    notes = []
+    if slots.get("redflags") is True:
+        severe += 10.0; notes.append("redflags")
+    t = slots.get("temp_c")
+    if isinstance(t, (int, float)):
+        if t >= 39.0:
+            moderate += 2.0
+        if t >= 40.0:
+            severe += 4.0
+    hr = slots.get("hr")
+    if isinstance(hr, (int, float)):
+        if hr >= 130:
+            severe += 2.0
+        elif hr >= 110:
+            moderate += 1.5
+    spo2 = slots.get("spo2")
+    if isinstance(spo2, (int, float)):
+        if spo2 < 92:
+            severe += 4.0
+        elif spo2 < 95:
+            moderate += 2.0
+    inten = (slots.get("intensity") or "").lower()
+    if inten == "severe":
+        severe += 3.0
+    elif inten == "moderate":
+        moderate += 2.0
+
+    s = max(1e-9, mild + moderate + severe)
+    probs = {"mild": mild / s, "moderate": moderate / s, "severe": severe / s}
+    label = max(probs, key=probs.get)
+    return {"label": label, "probabilities": probs, "notes": notes}
+
 # ───────────────────────────────
 # Load ML model safely (added)
 # ───────────────────────────────
@@ -383,6 +529,8 @@ def chat():
     s.setdefault("done", set())
     s.setdefault("last_question", None)
     s.setdefault("asked_screen_for", set())
+    s.setdefault("slots", {})
+    s.setdefault("pending_slot", None)
 
     # 0️⃣ Handle "yes" response to last question
     if s.get("last_question"):
@@ -541,7 +689,47 @@ def chat():
 
     print(f"🧩 Current session symptoms: {s['symptoms']}")
 
-    # 5️⃣ Final predictions
+    # --- SLOT collection phase (ask triage questions) ---
+    # If we have no pending slot, ask the next one
+    if s.get("pending_slot") is None:
+        qtext, slot_key = ask_next_slot(s.get("slots", {}), lang)
+        if qtext:
+            s["pending_slot"] = slot_key
+            s["last_question"] = qtext
+            return jsonify({"message": qtext, "lang": lang})
+    else:
+        # we are expecting an answer for pending_slot
+        key = s.get("pending_slot")
+        ans = text_raw or text
+        parsed = None
+        if key == "age":
+            parsed = _parse_age(ans)
+        elif key == "duration_days":
+            parsed = _parse_duration_days(ans)
+        elif key == "redflags":
+            parsed = _parse_yesno(ans)
+        elif key == "temp_c":
+            parsed = _parse_temp_c(ans)
+        elif key == "hr":
+            parsed = _parse_hr(ans)
+        elif key == "spo2":
+            parsed = _parse_spo2(ans)
+        elif key == "intensity":
+            parsed = _parse_intensity(ans)
+
+        # store parsed (even if None to record skip)
+        s.setdefault("slots", {})[key] = parsed
+        s["pending_slot"] = None
+
+        # ask next slot
+        qtext, slot_key = ask_next_slot(s.get("slots", {}), lang)
+        if qtext:
+            s["pending_slot"] = slot_key
+            s["last_question"] = qtext
+            return jsonify({"message": qtext, "lang": lang})
+
+    # All slots asked → compute severity and final prediction
+    severity = compute_severity_fallback(s.get("symptoms", []), s.get("slots", {}))
     result = predict_disease_ml(s["symptoms"])
     top = list(result.keys())[:2]
     details = get_symptom_details(s["symptoms"])
@@ -559,6 +747,8 @@ def chat():
         ],
         "lang": lang,
         "done": True,
+        "severity": severity,
+        "slots": s.get("slots", {}),
     }
 
     print("\n🩺 FINAL RESPONSE (to frontend):")
@@ -576,6 +766,8 @@ def chat():
         "asked_questions": {},
         "asked_global": set(),
         "asked_screen_for": set(),
+        "slots": {},
+        "pending_slot": None,
     }
     return jsonify(response)
 

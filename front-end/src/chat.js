@@ -134,6 +134,8 @@ function Chatbot() {
               predictions: data.predictions || [],
               lang: data.lang || "english",
               symptom_details: data.symptom_details,
+              severity: data.severity || null,
+              slots: data.slots || {},
             },
           });
         }, 2000);
@@ -218,6 +220,8 @@ function Chatbot() {
                   predictions: data.predictions || [],
                   lang: data.lang || "english",
                   symptom_details: data.symptom_details,
+                  severity: data.severity || null,
+                  slots: data.slots || {},
                 },
               });
             }, 2000);
