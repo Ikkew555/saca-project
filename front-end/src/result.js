@@ -1,7 +1,74 @@
+// result.js
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { translations } from "./translations";
 import "./result.css";
+
+function SeverityBadge({ label }) {
+  const color =
+    label === "severe"
+      ? "#dc2626"
+      : label === "moderate"
+        ? "#f59e0b"
+        : "#16a34a";
+  return (
+    <span
+      style={{
+        background: color,
+        color: "#fff",
+        padding: ".2rem .55rem",
+        borderRadius: ".5rem",
+        fontWeight: 600,
+        letterSpacing: 0.2,
+        fontSize: ".85rem",
+      }}
+    >
+      {String(label || "unknown").toUpperCase()}
+    </span>
+  );
+}
+
+function SeverityBars({ probabilities = {} }) {
+  const keys = ["mild", "moderate", "severe"];
+  const color = (k) =>
+    k === "severe" ? "#dc2626" : k === "moderate" ? "#f59e0b" : "#16a34a";
+  const pct = (p) => (p == null || isNaN(p) ? "—" : `${Math.round(p * 100)}%`);
+  const w = (p) => `${Math.max(0, Math.min(100, Math.round((p || 0) * 100)))}%`;
+  return (
+    <div>
+      {keys.map((k) => (
+        <div key={k} style={{ margin: ".4rem 0" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: ".9rem",
+            }}
+          >
+            <span style={{ textTransform: "capitalize" }}>{k}</span>
+            <span className="tabular-nums">{pct(probabilities[k])}</span>
+          </div>
+          <div
+            style={{
+              height: 10,
+              background: "#e5e7eb",
+              borderRadius: 999,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                height: 10,
+                width: w(probabilities[k]),
+                background: color(k),
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function ResultPage() {
   const location = useLocation();
@@ -10,11 +77,12 @@ function ResultPage() {
     symptoms = [],
     predictions = [],
     symptom_details = [],
+    severity = null, // ⬅️ NEW: pulled from chat.js navigate()
   } = location.state || {};
 
   // 🌐 Language setup
   const [language, setLanguage] = useState(
-    () => localStorage.getItem("lang") || "en"
+    () => localStorage.getItem("lang") || "en",
   );
   const langText = translations[language] || translations.en;
   const [showPopup, setShowPopup] = useState(true);
@@ -27,18 +95,21 @@ function ResultPage() {
 
   useEffect(() => {
     console.log("🩺 Full backend response ↓");
-    console.dir({ symptoms, predictions, symptom_details }, { depth: null });
+    console.dir(
+      { symptoms, predictions, symptom_details, severity },
+      { depth: null },
+    );
     const langLabel =
       language === "en"
         ? "🇬🇧 English"
         : language === "kriol"
-        ? "🇦🇺 Kriol"
-        : language;
+          ? "🇦🇺 Kriol"
+          : language;
     console.log(
       `%c🌐 Current language: ${langLabel}`,
-      "color: #4CAF50; font-weight: bold; font-size: 14px;"
+      "color: #4CAF50; font-weight: bold; font-size: 14px;",
     );
-  }, [symptoms, predictions, symptom_details, language]);
+  }, [symptoms, predictions, symptom_details, severity, language]);
 
   return (
     <div className="result-container">
@@ -59,23 +130,35 @@ function ResultPage() {
             <h3 className="popup-title">{langText.chooseLanguage}</h3>
             <div className="popup-options">
               <button
-                className={`popup-option ${
-                  language === "en" ? "selected" : ""
-                }`}
+                className={`popup-option ${language === "en" ? "selected" : ""}`}
                 onClick={() => handleSelect("en")}
               >
                 🇬🇧 {translations.en.english}
               </button>
               <button
-                className={`popup-option ${
-                  language === "kriol" ? "selected" : ""
-                }`}
+                className={`popup-option ${language === "kriol" ? "selected" : ""}`}
                 onClick={() => handleSelect("kriol")}
               >
                 🇦🇺 {translations.kriol.kriol}
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ======== OVERALL SEVERITY (NEW) ======== */}
+      {severity && (
+        <div className="result-section">
+          <h3 style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
+            {language === "kriol" ? "Oloba Sevriti" : "Overall Severity"}{" "}
+            <SeverityBadge label={severity.label} />
+          </h3>
+          <p style={{ marginTop: ".35rem", color: "#374151" }}>
+            {language === "kriol"
+              ? "Estimit we kamap from yu ripot sik mo ol infomesen. Diswan no wan daignosis."
+              : "Estimated from your reported symptoms and context. This is not a diagnosis."}
+          </p>
+          <SeverityBars probabilities={severity.probabilities} />
         </div>
       )}
 
@@ -93,13 +176,20 @@ function ResultPage() {
                     .map((item) => item.symptom_kriol || item.symptom)
                     .join(", ")}
                 </b>
-                . Diswan luk{" "}
+                .{" "}
+                {severity ? (
+                  <>
+                    Oloba sevriti estimit:{" "}
+                    <b>{String(severity.label).toUpperCase()}</b>.{" "}
+                  </>
+                ) : null}
+                Diswan luk{" "}
                 {predictions.length > 0
                   ? predictions[0].score > 0.7
                     ? "laek strong sik we yu shud go klinik or si doktor kwiktaem."
                     : predictions[0].score > 0.4
-                    ? "laek midl sik. Yu ken kip rest, dring plenti watta, an luk afta yu bodi."
-                    : "laek laet sik nomo. Yu ken rest gud, dring watta, an kip yu bodi warm."
+                      ? "laek midl sik. Yu ken kip rest, dring plenti watta, an luk afta yu bodi."
+                      : "laek laet sik nomo. Yu ken rest gud, dring watta, an kip yu bodi warm."
                   : "main nomo sik, yu luk orait nomo."}{" "}
                 Imin gud yu bin chus blong yus dis app blong luk afta yu hilti.
                 SACA save help yu andaestan yu sik mo isi, an gib yu tok blong
@@ -114,13 +204,20 @@ function ResultPage() {
                     .map((item) => item.symptom)
                     .join(", ")}
                 </b>{" "}
-                — our system has identified that you may be showing signs of a{" "}
+                —{" "}
+                {severity ? (
+                  <>
+                    overall severity estimate:{" "}
+                    <b>{String(severity.label).toUpperCase()}</b>.{" "}
+                  </>
+                ) : null}
+                Our system has identified that you may be showing signs of a{" "}
                 {predictions.length > 0
                   ? predictions[0].score > 0.7
                     ? "serious condition. It’s strongly recommended that you visit a local clinic or consult a healthcare professional as soon as possible."
                     : predictions[0].score > 0.4
-                    ? "moderate condition. You should rest, drink plenty of water, and monitor your symptoms closely for any changes."
-                    : "mild condition. You may continue resting, maintaining hydration, and ensuring proper nutrition to recover faster."
+                      ? "moderate condition. You should rest, drink plenty of water, and monitor your symptoms closely for any changes."
+                      : "mild condition. You may continue resting, maintaining hydration, and ensuring proper nutrition to recover faster."
                   : "stable condition with no major health risks at the moment."}{" "}
                 It’s great that you used this tool to check your health — SACA
                 helps make medical understanding clearer and connects you to
@@ -150,9 +247,7 @@ function ResultPage() {
                 <p>
                   <b>{langText.causes}:</b> {content.common_causes || "—"}
                 </p>
-                {/* <p>
-                  <b>{langText.advice}:</b> {content.advice || "—"}
-                </p> */}
+                {/* <p><b>{langText.advice}:</b> {content.advice || "—"}</p> */}
               </div>
             );
           })
@@ -173,7 +268,6 @@ function ResultPage() {
             const confidence = Math.round(p.score * 100);
             const level =
               confidence < 40 ? "low" : confidence < 70 ? "medium" : "high";
-
             return (
               <div key={i} className="prediction-card">
                 <p>
@@ -205,7 +299,7 @@ function ResultPage() {
         <button
           onClick={() =>
             navigate("/suggestions", {
-              state: { predictions, symptoms },
+              state: { predictions, symptoms, severity }, // ⬅️ pass along severity
             })
           }
           className="btn-back"

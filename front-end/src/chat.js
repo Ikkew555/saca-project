@@ -26,7 +26,7 @@ function Chatbot() {
 
   const [text, setText] = useState("");
   const [messages, setMessages] = useState(() =>
-    Array.isArray(externalMessages) ? externalMessages : []
+    Array.isArray(externalMessages) ? externalMessages : [],
   );
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -36,13 +36,16 @@ function Chatbot() {
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
 
+  // 🔒 Gate: ensure severity shows only once per conversation
+  const hasShownSeverityRef = useRef(false);
+
   // helper: sync messages with parent context
   const pushAndSync = useCallback(
     (next) => {
       setMessages(next);
       onExternalMessagesChange(next);
     },
-    [onExternalMessagesChange]
+    [onExternalMessagesChange],
   );
 
   const appendAndSync = useCallback(
@@ -53,12 +56,12 @@ function Chatbot() {
         return next;
       });
     },
-    [onExternalMessagesChange]
+    [onExternalMessagesChange],
   );
 
   // 🌐 Language setup
   const [language, setLanguage] = useState(
-    () => localStorage.getItem("lang") || "en"
+    () => localStorage.getItem("lang") || "en",
   );
   const t = translations[language] || translations.en;
 
@@ -66,6 +69,9 @@ function Chatbot() {
   useEffect(() => {
     const isEmptyRoom = (externalMessages?.length ?? 0) === 0;
     if (isEmptyRoom) {
+      // Reset severity guard on new session
+      hasShownSeverityRef.current = false;
+
       const greet = {
         sender: "bot",
         text: getGreeting(language),
@@ -91,6 +97,88 @@ function Chatbot() {
     { name: "chest pain", file: chestPain },
     { name: "back pain", file: backPain },
   ];
+
+  // ---------- Severity UI (inline message) ----------
+  const SeverityCard = ({ severity }) => {
+    if (!severity) return null;
+    const label = severity.label || "unknown";
+    const probs = severity.probabilities || {};
+    const pct = (p) =>
+      p == null || isNaN(p) ? "—" : `${Math.round(p * 100)}%`;
+    const barW = (p) =>
+      `${Math.max(0, Math.min(100, Math.round((p || 0) * 100)))}%`;
+    const color = (k) =>
+      k === "severe" ? "#dc2626" : k === "moderate" ? "#f59e0b" : "#16a34a";
+
+    return (
+      <div className="message-bubble severity-card">
+        <div
+          className="sev-head"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: ".5rem",
+            marginBottom: ".25rem",
+          }}
+        >
+          <strong>Severity assessment</strong>
+          <span
+            className="sev-badge"
+            style={{
+              background: color(label),
+              color: "#fff",
+              padding: ".15rem .5rem",
+              borderRadius: ".5rem",
+              fontSize: ".8rem",
+            }}
+          >
+            {String(label).toUpperCase()}
+          </span>
+        </div>
+
+        {["mild", "moderate", "severe"].map((k) => (
+          <div key={k} style={{ margin: ".25rem 0" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: ".9rem",
+                marginBottom: ".15rem",
+              }}
+            >
+              <span style={{ textTransform: "capitalize" }}>{k}</span>
+              <span className="tabular-nums">{pct(probs[k])}</span>
+            </div>
+            <div
+              className="sev-bar-outer"
+              style={{
+                height: 8,
+                background: "#e5e7eb",
+                borderRadius: 999,
+                overflow: "hidden",
+              }}
+            >
+              <div
+                className="sev-bar-inner"
+                style={{
+                  height: 8,
+                  width: barW(probs[k]),
+                  background: color(k),
+                }}
+              />
+            </div>
+          </div>
+        ))}
+
+        <div
+          style={{ marginTop: ".35rem", color: "#6b7280", fontSize: ".8rem" }}
+        >
+          Estimated from your symptoms. This is not a diagnosis.
+        </div>
+      </div>
+    );
+  };
 
   // ✉️ Send text message to backend
   const handleSend = async (inputText, imageFile = null) => {
@@ -123,8 +211,23 @@ function Chatbot() {
       });
       const data = await res.json();
 
+      // If final, optionally show severity (if triage finished) then proceed to results
       if (data.done) {
         setIsTyping(false);
+
+        if (
+          data?.triage_status === "ready" &&
+          data?.severity &&
+          !hasShownSeverityRef.current
+        ) {
+          hasShownSeverityRef.current = true;
+          appendAndSync({
+            sender: "bot",
+            type: "severity",
+            severity: data.severity,
+          });
+        }
+
         setIsFinalLoading(true);
         setTimeout(() => {
           setIsFinalLoading(false);
@@ -134,6 +237,8 @@ function Chatbot() {
               predictions: data.predictions || [],
               lang: data.lang || "english",
               symptom_details: data.symptom_details,
+              severity: data.severity || null, // NEW
+              triage_status: data.triage_status || null, // NEW
             },
           });
         }, 2000);
@@ -141,7 +246,7 @@ function Chatbot() {
       }
 
       // normal reply with typing effect
-      let fullHTML = data.message;
+      let fullHTML = data.message || "";
       setTimeout(() => {
         setIsTyping(false);
         appendAndSync({ sender: "bot", text: "" });
@@ -159,7 +264,22 @@ function Chatbot() {
           });
           if (i >= fullHTML.length) clearInterval(interval);
         }, 20);
-      }, 2000);
+      }, 400);
+
+      // 🚫 NO fallback to /api/match here.
+      // ✅ Only show severity when backend says triage is ready:
+      if (
+        data?.triage_status === "ready" &&
+        data?.severity &&
+        !hasShownSeverityRef.current
+      ) {
+        hasShownSeverityRef.current = true;
+        appendAndSync({
+          sender: "bot",
+          type: "severity",
+          severity: data.severity,
+        });
+      }
     } catch (err) {
       console.error("Error:", err);
       setIsTyping(false);
@@ -198,17 +318,27 @@ function Chatbot() {
           });
           const data = await res.json();
 
-          // show what the bot heard
+          // echo the transcribed text
           if (data.transcribed_text) {
-            appendAndSync({
-              sender: "user",
-              text: `${data.transcribed_text}`,
-              // text: `🗣 You said: <i>${data.transcribed_text}</i>`,
-            });
+            appendAndSync({ sender: "user", text: `${data.transcribed_text}` });
           }
 
           if (data.done) {
             setIsTyping(false);
+
+            if (
+              data?.triage_status === "ready" &&
+              data?.severity &&
+              !hasShownSeverityRef.current
+            ) {
+              hasShownSeverityRef.current = true;
+              appendAndSync({
+                sender: "bot",
+                type: "severity",
+                severity: data.severity,
+              });
+            }
+
             setIsFinalLoading(true);
             setTimeout(() => {
               setIsFinalLoading(false);
@@ -218,6 +348,8 @@ function Chatbot() {
                   predictions: data.predictions || [],
                   lang: data.lang || "english",
                   symptom_details: data.symptom_details,
+                  severity: data.severity || null, // NEW
+                  triage_status: data.triage_status || null, // NEW
                 },
               });
             }, 2000);
@@ -242,6 +374,20 @@ function Chatbot() {
             });
             if (i >= fullText.length) clearInterval(interval);
           }, 20);
+
+          // Again: only when ready
+          if (
+            data?.triage_status === "ready" &&
+            data?.severity &&
+            !hasShownSeverityRef.current
+          ) {
+            hasShownSeverityRef.current = true;
+            appendAndSync({
+              sender: "bot",
+              type: "severity",
+              severity: data.severity,
+            });
+          }
         } catch (err) {
           console.error("Voice processing error:", err);
           pushAndSync([
@@ -347,6 +493,8 @@ function Chatbot() {
                   title={msg.text}
                 />
               </div>
+            ) : msg.type === "severity" ? (
+              <SeverityCard severity={msg.severity} />
             ) : (
               <div
                 className="message-bubble"

@@ -33,6 +33,7 @@ instance/
 
 back-end/uploads/*
 back-end/uploads/voice.webm
+!back-end/uploads/.gitkeep
 
 # Env files (commit only templates)
 .env

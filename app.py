@@ -27,6 +27,10 @@ def ensure_node_deps():
     if not (FRONT / "node_modules").exists():
         run([NPM, "install"], cwd=FRONT)
 
+    react_scripts = FRONT / "node_modules" / ".bin" / ("react-scripts.cmd" if os.name == "nt" else "react-scripts")
+    if not react_scripts.exists():
+        run([NPM, "install"], cwd=FRONT)
+
 
 def main():
     if not (BACK / "run.py").exists():
