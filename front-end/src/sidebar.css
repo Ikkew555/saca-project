@@ -6,7 +6,7 @@
   width: 240px;
   border-right: 1px solid #4f46e5;
   padding: 12px;
-  height: 100vh;
+  height: 100%;
   overflow-y: auto;
   background-color: #4f46e5;
 }
