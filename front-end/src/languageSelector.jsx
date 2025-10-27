@@ -6,7 +6,7 @@ const LanguageSelector = ({ language, onChange }) => {
   const [open, setOpen] = useState(false);
 
   const options = [
-    { value: "en-US", label: "English (US)", flag: usFlag },
+    { value: "en", label: "English (US)", flag: usFlag },
     { value: "kriol", label: "Kriol (AU)", flag: auFlag },
   ];
 

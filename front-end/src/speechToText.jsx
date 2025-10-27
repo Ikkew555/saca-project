@@ -18,7 +18,7 @@ function SpeechToText() {
     const recognizer = new SpeechRecognition();
 
     // 🎤 Settings
-    recognizer.lang = "en-US";
+    recognizer.lang = "en";
     recognizer.interimResults = true; // capture partial results live
     recognizer.continuous = true;     // keep listening until stopped
 

@@ -4,6 +4,7 @@
 
 ## 📁 Project Structure
 
+```
 SACA-PROJECT/
 ├── backend/ # Flask (Python) backend for ML/NLP logic
 │ ├── app/ # Core logic, data, and utility modules
@@ -24,6 +25,7 @@ SACA-PROJECT/
 │ └── vite.config.js # For Vite build system
 │
 └── README.md # Project documentation
+```
 
 ## 🚀 Features
 
@@ -50,4 +52,8 @@ Visit: http://localhost:3000
 cd backend
 pip install -r requirements.txt
 python3 run.py
+```
+
+```
+pip install pandas scikit-learn joblib (only for first-time)
 ```

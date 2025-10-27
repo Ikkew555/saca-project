@@ -88,3 +88,15 @@
 .hero {
   font-size: 2rem;
 }
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+/* .app-main {
+  padding: 20px 28px;
+} */
+

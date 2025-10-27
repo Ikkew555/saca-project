@@ -1,0 +1,157 @@
+symptom,order,question_en,question_kriol
+fever,1,How long have you had fever?,Yu bin gat fever fo how long?
+fever,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+fever,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+fever,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+cough,1,How long have you had cough?,Yu bin gat cough fo how long?
+cough,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+cough,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+cough,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+sore throat,1,How long have you had sore throat?,Yu bin gat sore throat fo how long?
+sore throat,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+sore throat,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+sore throat,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+chest pain,1,How long have you had chest pain?,Yu bin gat chest pain fo how long?
+chest pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+chest pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+chest pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+shortness of breath,1,How long have you had shortness of breath?,Yu bin gat shortness of breath fo how long?
+shortness of breath,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+shortness of breath,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+shortness of breath,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+fatigue,1,How long have you had fatigue?,Yu bin gat fatigue fo how long?
+fatigue,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+fatigue,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+fatigue,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+dizziness,1,How long have you had dizziness?,Yu bin gat dizziness fo how long?
+dizziness,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+dizziness,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+dizziness,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+runny nose,1,How long have you had runny nose?,Yu bin gat runny nose fo how long?
+runny nose,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+runny nose,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+runny nose,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+headache,1,How long have you had headache?,Yu bin gat headache fo how long?
+headache,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+headache,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+headache,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+vomiting,1,How long have you had vomiting?,Yu bin gat vomiting fo how long?
+vomiting,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+vomiting,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+vomiting,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+diarrhea,1,How long have you had diarrhea?,Yu bin gat diarrhea fo how long?
+diarrhea,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+diarrhea,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+diarrhea,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+chills,1,How long have you had chills?,Yu bin gat chills fo how long?
+chills,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+chills,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+chills,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+rash,1,How long have you had rash?,Yu bin gat rash fo how long?
+rash,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+rash,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+rash,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+back pain,1,How long have you had back pain?,Yu bin gat back pain fo how long?
+back pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+back pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+back pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+joint pain,1,How long have you had joint pain?,Yu bin gat joint pain fo how long?
+joint pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+joint pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+joint pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+itchy skin,1,How long have you had itchy skin?,Yu bin gat itchy skin fo how long?
+itchy skin,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+itchy skin,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+itchy skin,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+leg swelling,1,How long have you had leg swelling?,Yu bin gat leg swelling fo how long?
+leg swelling,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+leg swelling,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+leg swelling,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+abdominal cramps,1,How long have you had abdominal cramps?,Yu bin gat abdominal cramps fo how long?
+abdominal cramps,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+abdominal cramps,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+abdominal cramps,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+nausea,1,How long have you had nausea?,Yu bin gat nausea fo how long?
+nausea,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+nausea,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+nausea,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+loss of appetite,1,How long have you had loss of appetite?,Yu bin gat loss of appetite fo how long?
+loss of appetite,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+loss of appetite,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+loss of appetite,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+burning urination,1,How long have you had burning urination?,Yu bin gat burning urination fo how long?
+burning urination,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+burning urination,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+burning urination,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+ear pain,1,How long have you had ear pain?,Yu bin gat ear pain fo how long?
+ear pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+ear pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+ear pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+eye pain,1,How long have you had eye pain?,Yu bin gat eye pain fo how long?
+eye pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+eye pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+eye pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+blurry vision,1,How long have you had blurry vision?,Yu bin gat blurry vision fo how long?
+blurry vision,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+blurry vision,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+blurry vision,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+sweating,1,How long have you had sweating?,Yu bin gat sweating fo how long?
+sweating,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+sweating,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+sweating,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+constipation,1,How long have you had constipation?,Yu bin gat constipation fo how long?
+constipation,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+constipation,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+constipation,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+sneezing,1,How long have you had sneezing?,Yu bin gat sneezing fo how long?
+sneezing,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+sneezing,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+sneezing,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+dehydration,1,How long have you had dehydration?,Yu bin gat dehydration fo how long?
+dehydration,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+dehydration,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+dehydration,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+night sweats,1,How long have you had night sweats?,Yu bin gat night sweats fo how long?
+night sweats,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+night sweats,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+night sweats,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+swollen glands,1,How long have you had swollen glands?,Yu bin gat swollen glands fo how long?
+swollen glands,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+swollen glands,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+swollen glands,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+hoarse voice,1,How long have you had hoarse voice?,Yu bin gat hoarse voice fo how long?
+hoarse voice,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+hoarse voice,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+hoarse voice,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+eye redness,1,How long have you had eye redness?,Yu bin gat eye redness fo how long?
+eye redness,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+eye redness,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+eye redness,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+heartburn,1,How long have you had heartburn?,Yu bin gat heartburn fo how long?
+heartburn,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+heartburn,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+heartburn,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+lower back pain,1,How long have you had lower back pain?,Yu bin gat lower back pain fo how long?
+lower back pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+lower back pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+lower back pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+shoulder pain,1,How long have you had shoulder pain?,Yu bin gat shoulder pain fo how long?
+shoulder pain,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+shoulder pain,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+shoulder pain,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+neck stiffness,1,How long have you had neck stiffness?,Yu bin gat neck stiffness fo how long?
+neck stiffness,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+neck stiffness,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+neck stiffness,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+numbness,1,How long have you had numbness?,Yu bin gat numbness fo how long?
+numbness,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+numbness,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+numbness,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+loss of balance,1,How long have you had loss of balance?,Yu bin gat loss of balance fo how long?
+loss of balance,2,"Is it getting better, worse, or the same?","Im kam gud, moa bad, o seim?"
+loss of balance,3,Does anything trigger or relieve it?,Eni samting mek im kamap o mekem im go daun?
+loss of balance,4,Do you have any other symptoms with it?,Yu gat eni nara sik tugetha wit dat?
+general,1,"On a scale 1–10, how bad is it?","Skel 1–10, ow strong dat sik?"
+general,2,When did it start?,Wen im stat?
+general,3,Have you taken any medicine?,Yu bin tek eni medisn?
+general,4,Anything else worrying you?,Eni nara samting mek yu wari?
